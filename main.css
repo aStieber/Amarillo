@@ -1,14 +1,46 @@
+.factory{
+    width: 200px;
+    height: 200px;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 50px;
+    margin: 20px;
+}
+
 .tile{
-	width: 80px;
-	height: 80px;
-	font-size: 60px;
-	font-family: Helvetica;
+    width: 10px;
+    height: 10px;
+    height: width;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 20px;
+    margin: 10px;
+}
+
+.tile[type="0"] {
+    background: #3455eb;
+}
+
+.tile[type="1"] {
+    background: #ffbf00;
+}
+
+.tile[type="2"] {
+    background: #ff1e00;
+}
+
+.tile[type="3"] {
+    background: #000000;
+}
+
+.tile[type="4"] {
+    background: #00f2ff;
 }
 
 .gameBoard{
-	display: none;
+    
 }
 
 .center{
-	margin: 0 auto;
+    margin: 0 auto;
 }
