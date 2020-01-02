@@ -11,6 +11,18 @@
   }
   userID = Cookies.get('ID');
 
+  function updateFactories(factories) {
+    $('.factories').empty();
+    factories.forEach(factory => {
+      factory.sort();
+      let newDiv = '<div class="factory flex-container">'
+      factory.forEach(tile => {
+        newDiv += `<div class="tile" type="${tile}"></div>`
+      });
+      newDiv += '</div>'
+      $('.factories').append(newDiv);
+    });
+  }
 
   $('#doStuff').on('click', () => {
     $('#mat').load("playerMat.html");
@@ -41,7 +53,7 @@
 
   //Start a created game.
   $('#startGame').on('click', () => {
-    socket.emit('startGame');
+    socket.emit('startGame', {room: roomID});
   });
 
 
@@ -66,29 +78,9 @@
     $('#startGame').show();
   });
 
-  /**
-	 * If player creates the game, he'll be P1(X) and has the first turn.
-	 * This event is received when opponent connects to the room.
-	 */
-  socket.on('player1', (data) => {
-    const message = `Hello, ${player.getPlayerName()}`;
-    $('#userHello').html(message);
-    player.setCurrentTurn(true);
+  socket.on('gameUpdate', (data) => {
+    updateFactories(data.factories);
   });
-
-  /**
-	 * Joined the game, so player is P2(O). 
-	 * This event is received when P2 successfully joins the game room. 
-	 */
-  socket.on('player2', (data) => {
-    const message = `Hello, ${data.name}`;
-
-    // Create game for player 2
-    game = new Game(data.room);
-    game.displayBoard(message);
-    player.setCurrentTurn(false);
-  });
-
   /**
 	 * Opponent played his turn. Update UI.
 	 * Allow the current player to play now. 

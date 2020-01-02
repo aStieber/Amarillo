@@ -1,15 +1,46 @@
-.factory{
-    width: 200px;
-    height: 200px;
-    border: 2px solid black;
-    border-radius: 10px;
-    padding: 50px;
-    margin: 20px;
+.flex-container {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-flow: row;
+    justify-content: space-around;
 }
 
-.tile{
-    width: 10px;
-    height: 10px;
+.factory.tile {
+    background: tomato;
+    margin: 5px;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5em;
+    text-align: center;
+    flex: 2 2 auto;
+    height:auto;
+}
+.tile:before {
+    content:'';
+    float:left;
+    padding-top:100%;
+}
+
+.factories {
+    fixed-width: 80%;
+    fixed-height: 40%;
+    flex-direction: column;
+    flex: 2 2 auto;
+}
+
+.factory{
+    border: 2px solid black;
+}
+
+.tile {
+    width: 5%;
+    height: 5%;
     height: width;
     border: 2px solid black;
     border-radius: 5px;

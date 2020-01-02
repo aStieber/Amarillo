@@ -1,5 +1,4 @@
-
-module.exports = function() {  
+module.exports = function() { 
   this.Player = class Player {
     constructor(name, userID) {
       this.name = name;
@@ -42,48 +41,41 @@ module.exports = function() {
   }
 
   this.Game = class Game {
-    constructor() {
+    constructor(roomName, numPlayers=2) {
+      this.roomName = roomName;
       this.tilePool = [];
       this.factories = [];
-      this.communityPool = [];
+      this.communityPool = []; //Called "Center of the table" in ruleset
       this.players = [];
+
+      //initialize factories
+      for (var i = 0; i < (numPlayers*2+1); i++)
+        this.factories.push([]);
+
+      this.refillTilePool();
     }
 
-    // Create the Game board by attaching event listeners to the buttons.
-    createGameBoard() {
-      function tileClickHandler() {
-        const row = parseInt(this.id.split('_')[1][0], 10);
-        const col = parseInt(this.id.split('_')[1][1], 10);
-        if (!player.getCurrentTurn() || !game) {
-          alert('Its not your turn!');
-          return;
-        }
-
-        if ($(this).prop('disabled')) {
-          alert('This tile has already been played on!');
-          return;
-        }
-
-        // Update board after your turn.
-        game.playTurn(this);
-        game.updateBoard(player.getPlayerType(), row, col, this.id);
-
-        player.setCurrentTurn(false);
-        player.updatePlaysArr(1 << ((row * 3) + col));
-
-        game.checkWinner();
+    tileClickHandler() {
+      const row = parseInt(this.id.split('_')[1][0], 10);
+      const col = parseInt(this.id.split('_')[1][1], 10);
+      if (!player.getCurrentTurn() || !game) {
+        alert('Its not your turn!');
+        return;
       }
-      let i = 0;
-      //iterate through wall, build colors
-      $('#playerWall').children().each(function (){
-        $(this).children().each(function (){
-          $(this).attr("type", i % 5);
-          i++;
-        });
-      });
 
-      //initializeTilePool();
-      //initializePlayers();
+      if ($(this).prop('disabled')) {
+        alert('This tile has already been played on!');
+        return;
+      }
+
+      // Update board after your turn.
+      game.playTurn(this);
+      game.updateBoard(player.getPlayerType(), row, col, this.id);
+
+      player.setCurrentTurn(false);
+      player.updatePlaysArr(1 << ((row * 3) + col));
+
+      game.checkWinner();
     }
 
     updateBoard(type, row, col, tile) {
@@ -92,9 +84,61 @@ module.exports = function() {
       this.moves++;
     }
 
-    addPlayer(name) {
+    addPlayer(name, userID) {
       this.players.push(new Player(name, userID));
       console.log(`Added player: ${name} | ${userID}`);
+    };
+
+    endTurn() {
+      //calculate points/updateWalls
+      //fill factories
+      //set first player
+
+      //this.calculatePoints(); //updates walls too
+
+      this.fillFactories();
+    }
+
+    fillFactories() {
+      for (let i = 0; i < this.factories.length; i++) {
+        if (this.tilePool.length >= 4) {
+          this.factories[i] = this.tilePool.slice(0, 4);
+          this.tilePool = this.tilePool.slice(4);
+        }
+        else {
+          //refill, there are special rules here though
+          this.refillTilePool();
+          i--;
+        }
+      };
+    }
+
+    getState() {
+      return {
+        room: this.roomName,
+        players: this.players,
+        factories: this.factories,
+        communityPool: this.communityPool
+      };
+    }
+
+    refillTilePool() {
+      function getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min)) + min; //min <= r < max
+      }
+      //100 tiles, 20 of each type.
+      let pool = new Array(100);
+      for (var i = 0; i < 100; i++) {
+        pool[i] = i % 5;
+      }
+      //fisher-yates
+      for (var i = 99; i > 0; i--) {
+        let j = getRandomInt(0, i + 1);
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      this.tilePool = pool;
     };
 
     // Send an update to the opponent to update their UI's tile

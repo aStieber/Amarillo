@@ -21,10 +21,11 @@ io.on('connection', (socket) => {
 
   // Create a new game room and notify the creator of game.
   socket.on('createGame', (data) => {
-    socket.join(`room-${++rooms}`);
-    gameMap[rooms] = new Game();
-    gameMap[rooms].addPlayer(data.name, data.userID);
-    socket.emit('gameCreated', { name: data.name, room: `room-${rooms}` });
+    let roomName = `room-${++rooms}`;
+    socket.join(roomName);
+    gameMap[roomName] = new Game(roomName, 2);
+    gameMap[roomName].addPlayer(data.name, data.userID);
+    socket.emit('gameCreated', { name: data.name, room: roomName });
   });
 
   // Connect the Player 2 to the room he requested. Show error if room full.
@@ -37,6 +38,12 @@ io.on('connection', (socket) => {
     } else {
       socket.emit('err', { message: 'Sorry, The room is full!' });
     }
+  });
+
+  socket.on('startGame', function(data){
+    //decide who goes first
+    gameMap[data.room].endTurn();
+    socket.emit('gameUpdate', gameMap[data.room].getState());
   });
 
   /**
