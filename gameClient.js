@@ -17,11 +17,74 @@
       factory.sort();
       let newDiv = '<div class="factory flex-container">'
       factory.forEach(tile => {
-        newDiv += `<div class="tile" type="${tile}"></div>`
+        newDiv += `<div class="tile" type="${tile}" draggable="true"></div>`
       });
       newDiv += '</div>'
       $('.factories').append(newDiv);
     });
+  }
+
+  function updateCommunityPool(pool) {
+    pool.sort();
+    $('#communityPool').remove();
+    let newDiv = '<div id="communityPool" class="communityPool factory flex-container">'
+    pool.forEach(tile => {
+      newDiv += `<div class="tile" type="${tile}"></div>`
+    });
+    newDiv += '</div>'
+    $('.factories').append(newDiv);
+  }
+
+  function updatePlayerMats(players, wallOffset=0) {
+    $('.playerMat').remove();
+    players.forEach(player => {
+      //order?
+
+      //patternLines
+      let patternLinesHTML = '';
+      player.patternLines.forEach(patternLine => {
+        patternLinesHTML += `<div class="patternLine">`;
+        patternLine.forEach(tileType => {
+          patternLinesHTML += `<div class="tile" type="${tileType}"></div>`;
+        });
+        patternLinesHTML += '</div>';
+      });
+      //wall
+      let wallHTML = '';
+      let t = wallOffset;
+      player.wall.forEach(wallLine => {
+        wallHTML += `<div class="patternLine">`;
+        wallLine.forEach(tileType => {
+          wallHTML += `<div class="tile" type="${t%5}" occupied=${tileType >= 0}></div>`;
+          t++
+        });
+        wallHTML += '</div>';
+        t++
+      });
+
+      //final product
+      var newPlayerMatHTML = `
+        <div class="playerMat">
+          <div class="scoreboard">
+            Name: ${player.name}
+            Score: ${player.score}
+          </div>
+          <div id="tileSection">
+            <div id="patternLines">
+              ${patternLinesHTML}
+            </div>
+            <div id="wall">
+              ${wallHTML}
+            </div>
+          </div>
+        </div>
+      `
+
+      $('.playerMats').append(newPlayerMatHTML);
+      if (userID === player.userID) {
+
+      }
+    });    
   }
 
   $('#doStuff').on('click', () => {
@@ -56,7 +119,6 @@
     socket.emit('startGame', {room: roomID});
   });
 
-
   // Join an existing game on the entered roomId. Emit the joinGame event.
   $('#join').on('click', () => {
     const name = $('#nameJoin').val();
@@ -80,30 +142,7 @@
 
   socket.on('gameUpdate', (data) => {
     updateFactories(data.factories);
-  });
-  /**
-	 * Opponent played his turn. Update UI.
-	 * Allow the current player to play now. 
-	 */
-  socket.on('turnPlayed', (data) => {
-    const row = data.tile.split('_')[1][0];
-    const col = data.tile.split('_')[1][1];
-    const opponentType = player.getPlayerType() === P1 ? P2 : P1;
-
-    game.updateBoard(opponentType, row, col, data.tile);
-    player.setCurrentTurn(true);
-  });
-
-  // If the other player wins, this event is received. Notify user game has ended.
-  socket.on('gameEnd', (data) => {
-    game.endGame(data.message);
-    socket.leave(data.room);
-  });
-
-  /**
-	 * End the game on any err event. 
-	 */
-  socket.on('err', (data) => {
-    game.endGame(data.message);
+    updateCommunityPool(data.communityPool);
+    updatePlayerMats(data.players, data.wallOffset);
   });
 }());

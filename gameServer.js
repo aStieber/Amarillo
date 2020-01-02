@@ -1,24 +1,40 @@
 module.exports = function() { 
   this.Player = class Player {
-    constructor(name, userID) {
+    constructor(name, userID, wallOffset=0) {
       this.name = name;
       this.userID = userID;
-      this.currentTurn = false;
-      this.currentScore = 0;
+      this.turnOrder = 0;
+      this.score = 0;
       this.wall = [];
       this.patternLines = [];
       this.floorLine = [];
+
+      this.clearPatternLines([0, 1, 2, 3, 4]);
+      this.initializeWall(wallOffset);
     }
 
-    // Set the bit of the move played by the player
-    // tileValue - Bitmask used to set the recently played move.
-    updatePlaysArr(tileValue) {
-      this.playsArr += tileValue;
+    clearPatternLines(rowsToClear) {
+      rowsToClear.forEach(rowIndex => {
+        let cleanLine = [];
+        for (let i = 0; i <= rowIndex; i++) { 
+          cleanLine.push(-1);
+        }
+        this.patternLines[rowIndex] = cleanLine;
+      });
     }
 
-    getPlaysArr() {
-      return this.playsArr;
+    initializeWall() {
+      let newWall = []; 
+      for (let i = 0; i < 5; i++) {
+        let newLine = [];
+        for (let j = 0; j < 5; j++) {
+          newLine.push(-1);
+        }
+        newWall.push(newLine);
+      }
+      this.wall = newWall;
     }
+
 
     // Set the currentTurn for player to turn and update UI to reflect the same.
     setCurrentTurn(turn) {
@@ -31,10 +47,6 @@ module.exports = function() {
       return this.name;
     }
 
-    getPlayerType() {
-      return this.type;
-    }
-
     getCurrentTurn() {
       return this.currentTurn;
     }
@@ -45,8 +57,9 @@ module.exports = function() {
       this.roomName = roomName;
       this.tilePool = [];
       this.factories = [];
-      this.communityPool = []; //Called "Center of the table" in ruleset
+      this.communityPool = [0, 0, 0, 0, 0, 0, 0]; //Called "Center of the table" in ruleset
       this.players = [];
+      this.wallOffset = 0;
 
       //initialize factories
       for (var i = 0; i < (numPlayers*2+1); i++)
@@ -78,15 +91,9 @@ module.exports = function() {
       game.checkWinner();
     }
 
-    updateBoard(type, row, col, tile) {
-      $(`#${tile}`).text(type).prop('disabled', true);
-      this.board[row][col] = type;
-      this.moves++;
-    }
-
     addPlayer(name, userID) {
       this.players.push(new Player(name, userID));
-      console.log(`Added player: ${name} | ${userID}`);
+      console.log(`Added player to game ${this.roomName}: ${name} | ${userID}`);
     };
 
     endTurn() {
@@ -118,7 +125,8 @@ module.exports = function() {
         room: this.roomName,
         players: this.players,
         factories: this.factories,
-        communityPool: this.communityPool
+        communityPool: this.communityPool,
+        wallOffset: this.wallOffset
       };
     }
 
@@ -140,58 +148,5 @@ module.exports = function() {
       }
       this.tilePool = pool;
     };
-
-    // Send an update to the opponent to update their UI's tile
-    playTurn(tile) {
-      const clickedTile = $(tile).attr('id');
-
-      // Emit an event to update other player that you've played your turn.
-      socket.emit('playTurn', {
-        tile: clickedTile,
-        room: this.getRoomId(),
-      });
-    }
-
-    checkWinner() {
-      const currentPlayerPositions = player.getPlaysArr();
-
-      Player.wins.forEach((winningPosition) => {
-        if ((winningPosition & currentPlayerPositions) === winningPosition) {
-          game.announceWinner();
-        }
-      });
-
-      const tieMessage = 'Game Tied :(';
-      if (this.checkTie()) {
-        socket.emit('gameEnded', {
-          room: this.getRoomId(),
-          message: tieMessage,
-        });
-        alert(tieMessage);
-        location.reload();
-      }
-    }
-
-    checkTie() {
-      return this.moves >= 9;
-    }
-
-    // Announce the winner if the current client has won. 
-    // Broadcast this on the room to let the opponent know.
-    announceWinner() {
-      const message = `${player.getPlayerName()} wins!`;
-      socket.emit('gameEnded', {
-        room: this.getRoomId(),
-        message,
-      });
-      alert(message);
-      location.reload();
-    }
-
-    // End the game if the other player won.
-    endGame(message) {
-      alert(message);
-      location.reload();
-    }
   }
 }

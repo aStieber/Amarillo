@@ -4,7 +4,6 @@
         <script type="text/javascript" src="http://livejs.com/live.js"></script> <!--autoreload, remove for production-->
         <title>Amarillo</title>
         <link rel="stylesheet" href="main.css">
-        <link rel="import" href="playerMat.html">
         <link rel="stylesheet" href="playerMat.css">
         <link rel="stylesheet" href="node_modules/skeleton-css/css/skeleton.css">
     </head>
@@ -24,16 +23,17 @@
             -->
             Status: <span id="statusSpan">Not connected</span>
             <div>
-            <button id="createGame">Create Game</button>
-            <button id="startGame" style="color: green;display:none;" >Start Game</button>
-            <input type="text" placeholder="Your Name" id="nameInput">                
+                <button id="createGame">Create Game</button>
+                <button id="startGame" style="color: green;display:none;">Start Game</button>
+                <input type="text" placeholder="Your Name" id="nameInput">                
             </div>
             <button id="doStuff">Do stuff</button>
             <button id="setTiles">set</button>
             <div class="gameBoard flex-container" >
-                <div class="factories flex-container"></div>
+                <div id="factories" class="factories flex-container"></div>
                 <div class="playerMats">
-                    <div id="mat"></div>
+                    <div class="opponentMats">
+                    </div>
                 </div>      
             </div>
         </div>

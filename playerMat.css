@@ -1,21 +1,30 @@
 .playerMat {
-    display: flex;
-    flex-direction: column;
     border: 2px solid black;
     padding: 10px;
 }
 
-.patternLines {
-	display: flex;
-	flex-direction: column;
-	background: tan;
+#patternLines {
+	width: 50%;
 }
-
 .patternLine {
 	display: flex;
 	flex-direction: row-reverse;
 }
 
-.wall .tile {
-	opacity: .5;
+#tileSection {
+	display: flex;
+	flex-direction: row;
+}
+
+#tileSection .tile {
+	max-height: 8%;
+	max-width: 8%;
+}
+
+#wall .tile[occupied=false] {
+	opacity: .1;
+}
+
+#wall {
+	width: 50%;
 }
