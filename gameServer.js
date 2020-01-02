@@ -39,8 +39,6 @@ module.exports = function() {
     // Set the currentTurn for player to turn and update UI to reflect the same.
     setCurrentTurn(turn) {
       this.currentTurn = turn;
-      const message = turn ? 'Your turn' : 'Waiting for Opponent';
-      $('#turn').text(message);
     }
 
     getPlayerName() {
@@ -57,9 +55,10 @@ module.exports = function() {
       this.roomName = roomName;
       this.tilePool = [];
       this.factories = [];
-      this.communityPool = [0, 0, 0, 0, 0, 0, 0]; //Called "Center of the table" in ruleset
+      this.communityPool = []; //Called "Center of the table" in ruleset
       this.players = [];
       this.wallOffset = 0;
+      this.currentTurn = 0;
 
       //initialize factories
       for (var i = 0; i < (numPlayers*2+1); i++)
@@ -68,41 +67,52 @@ module.exports = function() {
       this.refillTilePool();
     }
 
-    tileClickHandler() {
-      const row = parseInt(this.id.split('_')[1][0], 10);
-      const col = parseInt(this.id.split('_')[1][1], 10);
-      if (!player.getCurrentTurn() || !game) {
-        alert('Its not your turn!');
-        return;
-      }
-
-      if ($(this).prop('disabled')) {
-        alert('This tile has already been played on!');
-        return;
-      }
-
-      // Update board after your turn.
-      game.playTurn(this);
-      game.updateBoard(player.getPlayerType(), row, col, this.id);
-
-      player.setCurrentTurn(false);
-      player.updatePlaysArr(1 << ((row * 3) + col));
-
-      game.checkWinner();
-    }
-
     addPlayer(name, userID) {
       this.players.push(new Player(name, userID));
       console.log(`Added player to game ${this.roomName}: ${name} | ${userID}`);
     };
 
+    onClientMove(data) {
+      let factoryIndex = data.factoryIndex;
+      let tileType = data.tileType;
+      let targetRow = data.targetRow;
+      let userID = data.userID;
+      let selectedTileCount = 0;
+      for (let f = 0; f < 4; f++) {
+        if (this.factories[factoryIndex][f] == tileType) {
+          selectedTileCount++;
+        }
+        else {
+          this.communityPool.push(this.factories[factoryIndex][f])
+        }
+      }
+      this.factories[factoryIndex] = [];
+
+      let playerIndex = 0;
+      for (playerIndex; playerIndex < this.players.length; playerIndex++)
+        if (this.players[playerIndex].userID === userID) break;
+      let currentRow = this.players[playerIndex].patternLines[targetRow];
+      console.log(this.players[playerIndex].patternLines[targetRow])
+      for (let i = 0; i < this.players[playerIndex].patternLines[targetRow].length; i++) {
+        if (this.players[playerIndex].patternLines[targetRow][i] == -1 && selectedTileCount > 0) {
+          this.players[playerIndex].patternLines[targetRow][i] = tileType;
+          selectedTileCount--;
+        }
+      }
+      currentRow.forEach(element=> {
+        if (element == -1 && selectedTileCount > 0) {
+          element = tileType;
+          selectedTileCount--;
+        }
+      });
+      this.players[playerIndex].patternLines[targetRow] = currentRow;
+    }
+
     endTurn() {
       //calculate points/updateWalls
-      //fill factories
       //set first player
 
       //this.calculatePoints(); //updates walls too
-
       this.fillFactories();
     }
 
@@ -126,7 +136,8 @@ module.exports = function() {
         players: this.players,
         factories: this.factories,
         communityPool: this.communityPool,
-        wallOffset: this.wallOffset
+        wallOffset: this.wallOffset,
+        currentTurn: this.currentTurn
       };
     }
 

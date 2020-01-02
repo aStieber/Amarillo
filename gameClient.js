@@ -1,5 +1,5 @@
 (function init() {
-  let game;
+  let currentGameState;
   let roomID;
   let userID;
 
@@ -11,28 +11,71 @@
   }
   userID = Cookies.get('ID');
 
-  function updateFactories(factories) {
+  //D&D
+  document.addEventListener('dragstart', function(event) {
+    console.log('started drag')
+    event.dataTransfer.setData('Text', JSON.stringify({
+      factoryIndex: event.target.parentElement.attributes.factoryIndex.value,
+      tileType: event.target.attributes.type.value
+    }));
+  });
+
+  document.addEventListener('dragenter', function(event) {
+    if ( event.target.classList.contains('droptarget') ) {
+      event.target.style.border = '2px dotted red';
+    }
+  });
+
+  document.addEventListener('dragover', function(event) {
+    event.preventDefault();
+  });
+
+  document.addEventListener('dragleave', function(event) {
+    if (event.target.classList.contains('droptarget')) {
+      event.target.style.border = '';
+    }
+  });
+
+  document.addEventListener('drop', function(event) {
+  event.preventDefault();
+  if (event.target.classList.contains('droptarget')) {
+    event.target.style.border = '';
+    var data = JSON.parse(event.dataTransfer.getData('Text'));
+    if (data.factoryIndex === null || data.tileType === null) return;
+    console.log('arst');
+    socket.emit('clientMove', {
+      room: roomID,
+      targetRow: event.target.parentElement.attributes.patternLineIndex.value,
+      userID: userID,
+      ...data
+    });
+  }
+});
+
+  function updateFactories(factories, isClientsTurn=false) {
     $('.factories').empty();
+    let i = 0;
     factories.forEach(factory => {
       factory.sort();
-      let newDiv = '<div class="factory flex-container">'
+      let newDiv = `<div class="factory flex-container" factoryIndex="${i}">`
       factory.forEach(tile => {
-        newDiv += `<div class="tile" type="${tile}" draggable="true"></div>`
+        newDiv += `<div class="tile" type="${tile}" draggable="${isClientsTurn.toString()}"></div>`
       });
       newDiv += '</div>'
       $('.factories').append(newDiv);
+      i++;
     });
   }
 
-  function updateCommunityPool(pool) {
+  function updateCommunityPool(pool, isClientsTurn=false) {
     pool.sort();
     $('#communityPool').remove();
-    let newDiv = '<div id="communityPool" class="communityPool factory flex-container">'
+    let newDiv = '<div id="communityPool" class="communityPool factory flex-container" factoryIndex="-1">'
     pool.forEach(tile => {
-      newDiv += `<div class="tile" type="${tile}"></div>`
+      newDiv += `<div class="tile" type="${tile}" draggable="${isClientsTurn.toString()}"></div>`
     });
     newDiv += '</div>'
-    $('.factories').append(newDiv);
+    $('#centerBoard').append(newDiv);
   }
 
   function updatePlayerMats(players, wallOffset=0) {
@@ -42,12 +85,16 @@
 
       //patternLines
       let patternLinesHTML = '';
+      let i = 0;
       player.patternLines.forEach(patternLine => {
-        patternLinesHTML += `<div class="patternLine">`;
+        patternLinesHTML += `<div class="patternLine" patternLineIndex="${i}">`;
         patternLine.forEach(tileType => {
-          patternLinesHTML += `<div class="tile" type="${tileType}"></div>`;
+          let classList = 'tile';
+          if (tileType == -1) classList += ' droptarget';
+          patternLinesHTML += `<div class="${classList}" type="${tileType}"></div>`;
         });
         patternLinesHTML += '</div>';
+        i++;
       });
       //wall
       let wallHTML = '';
@@ -86,12 +133,6 @@
       }
     });    
   }
-
-  $('#doStuff').on('click', () => {
-    $('#mat').load("playerMat.html");
-    game = new Game("arst");//new Game(data.room);
-    game.displayBoard();
-  });
 
   $('#setTiles').on('click', () => {
     let i =0;
@@ -141,8 +182,14 @@
   });
 
   socket.on('gameUpdate', (data) => {
-    updateFactories(data.factories);
-    updateCommunityPool(data.communityPool);
+    currentGameState = data;
+
+    let isClientsTurn = true;
+    data.players.forEach(player => {
+      isClientsTurn |= (player.userID === userID);
+    });
+    updateFactories(data.factories, isClientsTurn);
+    updateCommunityPool(data.communityPool, isClientsTurn);
     updatePlayerMats(data.players, data.wallOffset);
   });
 }());

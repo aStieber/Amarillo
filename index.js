@@ -43,12 +43,17 @@ io.on('connection', (socket) => {
   socket.on('startGame', function(data){
     //decide who goes first
     gameMap[data.room].endTurn();
+    console.log('start game')
     socket.emit('gameUpdate', gameMap[data.room].getState());
   });
 
-  /**
-     * Handle the turn played by either player and notify the other.
-     */
+
+  socket.on('clientMove', (data) => {
+    console.log('Received client move.');
+    gameMap[data.room].onClientMove(data);
+    socket.emit('gameUpdate', gameMap[data.room].getState());
+  });
+
   socket.on('playTurn', (data) => {
     socket.broadcast.to(data.room).emit('turnPlayed', {
       tile: data.tile,

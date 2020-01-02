@@ -22,7 +22,6 @@ body {
     font-weight: bold;
     font-size: 1.5em;
     text-align: center;
-    flex: 2 2 auto;
     height:auto;
 }
 .tile:before {
@@ -31,8 +30,9 @@ body {
     padding-top:100%;
 }
 
-#factories {
-    max-height: 10%;
+.factories {
+    width: 60%;
+    display: flex;
     flex-direction: column;
 }
 
@@ -43,12 +43,14 @@ body {
 }
 
 .communityPool {
-    background: purple;
+    min-width: 40%;
+    background: #999;
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .tile {
-    width: 10%;
-    height: 10%;
+    width: 20%;
     border: 2px solid black;
     border-radius: 5px;
     padding: 15px;
@@ -76,9 +78,18 @@ body {
 }
 
 .gameBoard{
+    display: flex;
     flex-direction: column;
+    justify-content: right-flex;
 }
 
 .center{
     margin: 0 auto;
+}
+
+#centerBoard {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding: 8px;
 }
