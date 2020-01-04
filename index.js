@@ -1,4 +1,4 @@
-require('./gameServer.js')();
+const { Game, Player } = require('./gameServer');
 
 const express = require('express');
 const path = require('path');
