@@ -76,10 +76,14 @@
         $('.option').on('click', element => {
           console.log('Pattern line selected.');
           $('.tile').off('click');
+          let patternLineIndex = $(element.target.parentElement).attr('patternlineindex');
+
+
           socket.emit('clientMove', { 
             factoryIndex: $('.selectedTile:first').attr('factoryindex'),
+            newFloorLineCount: 0,
             tileType: $(element.target).attr('type'),
-            targetRow: $(element.target.parentElement).attr('patternlineindex'),
+            targetRow: patternLineIndex,
             userID: g_userID,
             room: g_roomID
           });
@@ -183,6 +187,10 @@
       }
     });    
   }
+
+  $('#endTurn').on('click', () => {
+    socket.emit('debugEndTurn', { room: g_roomID });
+  });
 
   // Create a new game. Emit newGame event.
   $('#createGame').on('click', () => {

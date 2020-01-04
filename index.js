@@ -19,6 +19,11 @@ let gameMap = {};
 
 io.on('connection', (socket) => {
 
+  socket.on('debugEndTurn', (data) => {
+    gameMap[data.room].endTurn();
+    socket.emit('gameUpdate', gameMap[data.room].getState());
+  });
+
   // Create a new game room and notify the creator of game.
   socket.on('createGame', (data) => {
     let roomName = `room-${++rooms}`;

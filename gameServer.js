@@ -1,4 +1,5 @@
 module.exports = function() { 
+  const deepCopyArray = (items) => items.map(item => Array.isArray(item) ? deepCopyArray(item) : item);
   this.Player = class Player {
     constructor(name, userID, wallOffset=0) {
       this.name = name;
@@ -35,8 +36,36 @@ module.exports = function() {
       this.wall = newWall;
     }
 
-    getPlayerName() {
-      return this.name;
+    updateWall(tileType, rowIndex, columnIndex) {
+      this.wall[rowIndex][columnIndex] = tileType;
+      this.clearPatternLines([rowIndex]);
+
+      //$.extend(true, [], this.wall) //deep copy?
+      let hSearchScore = this.recursiveSearch(deepCopyArray(this.wall), rowIndex, columnIndex, 'h');
+      let vSearchScore = this.recursiveSearch(deepCopyArray(this.wall), rowIndex, columnIndex, 'v');
+      //if either search is exactly 1, only consider the other score. Not my fault, that's the rules.
+      this.score += (hSearchScore + vSearchScore)
+      if (hSearchScore === 1 || vSearchScore === 1) {
+         this.score -= 1; //this way, we don't have to worry about which is 1.
+      }
+      console.log("new score: " + this.score);
+    }
+
+    recursiveSearch(wallCopy, row, column, searchDirection='h') {
+      if (wallCopy[row][column] !== -1) {
+        let score = 1;
+        wallCopy[row][column] = -1; //prevent search from coming back to us.
+        if (searchDirection === 'v') {
+          if (row > 0) score += this.recursiveSearch(wallCopy, row-1, column, searchDirection);
+          if (row < 4) score += this.recursiveSearch(wallCopy, row+1, column, searchDirection);
+        }
+        else if (searchDirection === 'h') {
+          if (column > 0) score += this.recursiveSearch(wallCopy, row, column-1, searchDirection);
+          if (column < 4) score += this.recursiveSearch(wallCopy, row, column+1, searchDirection);
+        }
+        return score;
+      }
+      return 0;
     }
   }
 
@@ -133,6 +162,7 @@ module.exports = function() {
 
       //this.calculatePoints(); //updates walls too
       this.fillFactories();
+      this.communityPool = []; //should be empty right now anyway.
     }
 
     getTilesLeftInPlay() {
@@ -147,10 +177,10 @@ module.exports = function() {
       this.players.forEach(player => {
         //identify completed rows
         let completedPatternLineIndexes = [];
-        for (let i = 0; i < player.patternLines.length; i++) {
+        for (let i in player.patternLines) {
           let hasEmptyCell = false;
           for (let t in player.patternLines[i]) {
-            if (t == -1) {
+            if (player.patternLines[i][t] === -1) {
               hasEmptyCell = true;
               break;
             }
@@ -159,9 +189,12 @@ module.exports = function() {
         }
         //move to wall
         for (let i in completedPatternLineIndexes) {
-          //let tileType = player.patternLines[i][0];
-          //let rowIndex = i;
-          //let columnIndex = getColumnFromRow(rowIndex, tileType); 
+          let tileType = parseInt(player.patternLines[completedPatternLineIndexes[i]][0]);
+          let rowIndex = parseInt(completedPatternLineIndexes[i]);
+          let columnIndex = this.getColumnFromRow(rowIndex, tileType); 
+
+          player.updateWall(tileType, rowIndex, columnIndex);
+
         }
         //update points
         //reset line
@@ -169,15 +202,8 @@ module.exports = function() {
     }
 
     getColumnFromRow(rowIndex, tileType) {
-      //01234
-      //12340
-      //23401
-
-      //0,0 -> 0
-      //1,0 -> 4
-      //1,1 -> 0
-      return (rowIndex*4 - tileType) % 5;
-
+      //https://jsfiddle.net/p2ebduqk/2/
+      return (this.wallOffset + tileType - rowIndex + 5) % 5;
     }
 
     fillFactories() {
