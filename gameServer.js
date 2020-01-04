@@ -7,7 +7,7 @@ module.exports = function() {
       this.score = 0;
       this.wall = [];
       this.patternLines = [];
-      this.floorLine = [];
+      this.floorLine = []; //max 6 spaces
 
       this.clearPatternLines([0, 1, 2, 3, 4]);
       this.initializeWall(wallOffset);
@@ -49,6 +49,7 @@ module.exports = function() {
       this.players = [];
       this.wallOffset = 0;
       this.currentTurn = 0;
+      this.roundCount = -1;
 
       //initialize factories
       for (var i = 0; i < (numPlayers*2+1); i++)
@@ -83,7 +84,6 @@ module.exports = function() {
         this.communityPool = newCommunityPool;
       }
       else {
-        console.log(this.factories[factoryIndex])
         for (let f = 0; f < 4; f++) {
           if (this.factories[factoryIndex][f] == tileType) {
             selectedTileCount++;
@@ -99,6 +99,8 @@ module.exports = function() {
       let playerIndex = 0;
       for (playerIndex; playerIndex < this.players.length; playerIndex++)
         if (this.players[playerIndex].userID === userID) break;
+
+      //update player's pattern lines
       let currentRow = this.players[playerIndex].patternLines[targetRow];
       for (let i = 0; i < this.players[playerIndex].patternLines[targetRow].length; i++) {
         if (this.players[playerIndex].patternLines[targetRow][i] == -1 && selectedTileCount > 0) {
@@ -114,15 +116,68 @@ module.exports = function() {
       });
       this.players[playerIndex].patternLines[targetRow] = currentRow;
 
-      this.currentTurn = (this.currentTurn + 1) % this.players.length;
+      if (this.getTilesLeftInPlay() > 0) {
+        this.currentTurn = (this.currentTurn + 1) % this.players.length;
+      }
+      else {
+        this.endTurn();
+      }
     }
 
     endTurn() {
+      this.roundCount++;
+      this.currentTurn = this.roundCount % this.players.length; //next player starts each round
       //calculate points/updateWalls
-      //set first player
+      this.updatePlayerBoards();
+      //
 
       //this.calculatePoints(); //updates walls too
       this.fillFactories();
+    }
+
+    getTilesLeftInPlay() {
+      let output = 0;
+      this.factories.forEach(factory => {
+        output += factory.length;
+      });
+      return output;
+    }
+
+    updatePlayerBoards() {
+      this.players.forEach(player => {
+        //identify completed rows
+        let completedPatternLineIndexes = [];
+        for (let i = 0; i < player.patternLines.length; i++) {
+          let hasEmptyCell = false;
+          for (let t in player.patternLines[i]) {
+            if (t == -1) {
+              hasEmptyCell = true;
+              break;
+            }
+          }
+          if (!hasEmptyCell) completedPatternLineIndexes.push(i);
+        }
+        //move to wall
+        for (let i in completedPatternLineIndexes) {
+          //let tileType = player.patternLines[i][0];
+          //let rowIndex = i;
+          //let columnIndex = getColumnFromRow(rowIndex, tileType); 
+        }
+        //update points
+        //reset line
+      });
+    }
+
+    getColumnFromRow(rowIndex, tileType) {
+      //01234
+      //12340
+      //23401
+
+      //0,0 -> 0
+      //1,0 -> 4
+      //1,1 -> 0
+      return (rowIndex*4 - tileType) % 5;
+
     }
 
     fillFactories() {

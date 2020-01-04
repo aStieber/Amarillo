@@ -16,10 +16,10 @@
   let g_turnStateMachine = new StateMachine({
     init: 'idle',
     transitions: [
-      { name: 'beginTurn', from: 'idle',  to: 'fSelect' },
+      { name: 'beginTurn', from: '*',  to: 'fSelect' },
       { name: 'factorySelect', from: 'fSelect', to: 'plSelect' },
       { name: 'factoryUnselect', from: 'plSelect', to: 'fSelect' },
-      { name: 'patternLineSelect', from: 'plSelect', to: 'endTurn' }
+      { name: 'reset', from: '*', to: 'idle' }
     ],
     methods: {
       onBeginTurn: function() { 
@@ -28,17 +28,16 @@
         $('.factory .tile').on('click', element => {
           let tileType = element.target.attributes.type.value;
           let fIndex = element.target.attributes.factoryIndex.value;
-          let factoryIndex = (fIndex == -1 ? g_gameState.factories.length - 1 : fIndex);
 
+          let selectedTiles;
+          if (fIndex == -1) {
+            selectedTiles = $('#communityPool').find('[type="' + tileType + '"]');
+          }
+          else {
+            selectedTiles = $('#factories').children().eq(fIndex).find('[type="' + tileType + '"]');
+          }
           //highlight selected type in factory;
-          let selectedTiles = $('#factories').children().eq(factoryIndex).find('[type="' + tileType + '"]');
           selectedTiles.toggleClass('selectedTile');
-          
-          //highlight possible rows;
-          //highlightPatternLines(tileType, selectedTiles.length);
-          //iterate through player patternlines
-          
-          //apply styling to n tiles
 
           let rowsToHighlight = [];
           for (let r = 0; r < 5; r++) {
@@ -75,7 +74,15 @@
           g_turnStateMachine.factoryUnselect();
         }); 
         $('.option').on('click', element => {
-          g_turnStateMachine.patternLineSelect(element);
+          console.log('Pattern line selected.');
+          $('.tile').off('click');
+          socket.emit('clientMove', { 
+            factoryIndex: $('.selectedTile:first').attr('factoryindex'),
+            tileType: $(element.target).attr('type'),
+            targetRow: $(element.target.parentElement).attr('patternlineindex'),
+            userID: g_userID,
+            room: g_roomID
+          });
         });
       },
       onFactoryUnselect: function() { 
@@ -85,17 +92,9 @@
         $('.tile.option').toggleClass('option');
         this.onBeginTurn();
       },
-      onPatternLineSelect: function(smData, element) {
-        console.log('Pattern line selected.');
+      onReset: function() {
+        console.log("Turn statemachine reset.");
         $('.tile').off('click');
-        socket.emit('clientMove', { 
-          factoryIndex: $('.selectedTile:first').attr('factoryindex'),
-          tileType: $(element.target).attr('type'),
-          targetRow: $(element.target.parentElement).attr('patternlineindex'),
-          userID: g_userID,
-          room: g_roomID
-        });
-        this.beginTurn();
       }
     }
   });
@@ -125,7 +124,7 @@
     $('#communityPool').remove();
     let newDiv = '<div id="communityPool" class="communityPool factory flex-container" factoryIndex="-1">'
     pool.forEach(tile => {
-      newDiv += `<div class="tile placed" type="${tile}" draggable="${g_isClientsTurn.toString()}"></div>`
+      newDiv += `<div class="tile placed" type="${tile}" draggable="${g_isClientsTurn.toString()}" factoryIndex="-1"></div>`
     });
     newDiv += '</div>'
     $('#centerBoard').append(newDiv);
