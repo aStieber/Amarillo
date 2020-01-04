@@ -1,5 +1,5 @@
 (function init() { 
-  let g_gameState;
+  let g_gameState; //todo: use window.localstorage
   let g_clientPlayer;
   let g_isClientsTurn = false;
   let g_roomID;
@@ -76,13 +76,15 @@
         $('.option').on('click', element => {
           console.log('Pattern line selected.');
           $('.tile').off('click');
+          let tileType = $(element.target).attr('type');
           let patternLineIndex = $(element.target.parentElement).attr('patternlineindex');
-
+          let selectedCount = $('.placed.selectedTile').length;
+          let highlightedCount = $(`.patternLine[patternlineindex=${patternLineIndex}] .option`).length;
 
           socket.emit('clientMove', { 
             factoryIndex: $('.selectedTile:first').attr('factoryindex'),
-            newFloorLineCount: 0,
-            tileType: $(element.target).attr('type'),
+            floorLineCount: Math.max(selectedCount - highlightedCount, 0),
+            tileType,
             targetRow: patternLineIndex,
             userID: g_userID,
             room: g_roomID

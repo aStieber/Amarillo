@@ -1,5 +1,9 @@
+const { JSDOM } = require('jsdom');
+const { window } = new JSDOM('<html></html>');
+const $ = require('jquery')(window);
 module.exports = function() { 
-  const deepCopyArray = (items) => items.map(item => Array.isArray(item) ? deepCopyArray(item) : item);
+  //$.extend(true, (Array.isArray(a) ? [] : {}), a);
+  const deepCopyArray = (a) => $.extend(true, (Array.isArray(a) ? [] : {}), a);
   this.Player = class Player {
     constructor(name, userID, wallOffset=0) {
       this.name = name;
@@ -8,7 +12,7 @@ module.exports = function() {
       this.score = 0;
       this.wall = [];
       this.patternLines = [];
-      this.floorLine = []; //max 6 spaces
+      this.floorLine = []; //max 7 spaces
 
       this.clearPatternLines([0, 1, 2, 3, 4]);
       this.initializeWall(wallOffset);
@@ -40,7 +44,6 @@ module.exports = function() {
       this.wall[rowIndex][columnIndex] = tileType;
       this.clearPatternLines([rowIndex]);
 
-      //$.extend(true, [], this.wall) //deep copy?
       let hSearchScore = this.recursiveSearch(deepCopyArray(this.wall), rowIndex, columnIndex, 'h');
       let vSearchScore = this.recursiveSearch(deepCopyArray(this.wall), rowIndex, columnIndex, 'v');
       //if either search is exactly 1, only consider the other score. Not my fault, that's the rules.
@@ -48,8 +51,14 @@ module.exports = function() {
       if (hSearchScore === 1 || vSearchScore === 1) {
          this.score -= 1; //this way, we don't have to worry about which is 1.
       }
-      console.log("new score: " + this.score);
     }
+
+    clearFloorLine() {
+      //                   -1  -1  -2  -2  -2  -3   -3
+      const penaltyList = [-1, -2, -4, -6, -8, -11, -14];
+      this.score = Math.max(this.score + penaltyList[this.floorLine.length - 1], 0);
+    }
+
 
     recursiveSearch(wallCopy, row, column, searchDirection='h') {
       if (wallCopy[row][column] !== -1) {
@@ -97,8 +106,10 @@ module.exports = function() {
       let tileType = data.tileType;
       let targetRow = data.targetRow;
       let userID = data.userID;
+      let floorLineCount = data.floorLineCount; //number of tiles to add to the floor line.
       let selectedTileCount = 0;
 
+      //Move tiles to pool, count selectedTiles
       if (factoryIndex == -1) //from the communityPool
       { 
         let newCommunityPool = []; 
@@ -106,9 +117,7 @@ module.exports = function() {
           if (this.communityPool[f] == tileType) {
             selectedTileCount++;
           }
-          else {
-            newCommunityPool.push(this.communityPool[f]);
-          }
+          else { newCommunityPool.push(this.communityPool[f]); }
         }
         this.communityPool = newCommunityPool;
       }
@@ -117,23 +126,31 @@ module.exports = function() {
           if (this.factories[factoryIndex][f] == tileType) {
             selectedTileCount++;
           }
-          else {
-            this.communityPool.push(this.factories[factoryIndex][f]);
-          }
+          else { this.communityPool.push(this.factories[factoryIndex][f]); }
         }
         this.factories[factoryIndex] = [];
       }
       
+      let player = {};
+      for (let i = 0; i < this.players.length; i++) {
+        if (this.players[i].userID === userID) {
+          player = this.players[i];
+          break;
+        };
+      }
 
-      let playerIndex = 0;
-      for (playerIndex; playerIndex < this.players.length; playerIndex++)
-        if (this.players[playerIndex].userID === userID) break;
+      //update player's floor line
+      for (let i = 0; i < floorLineCount; i++) {
+        if (player.floorLine.length < 7) {
+          player.floorLine.push(tileType);
+        }
+      }
 
       //update player's pattern lines
-      let currentRow = this.players[playerIndex].patternLines[targetRow];
-      for (let i = 0; i < this.players[playerIndex].patternLines[targetRow].length; i++) {
-        if (this.players[playerIndex].patternLines[targetRow][i] == -1 && selectedTileCount > 0) {
-          this.players[playerIndex].patternLines[targetRow][i] = tileType;
+      let currentRow = player.patternLines[targetRow];
+      for (let i = 0; i < player.patternLines[targetRow].length; i++) {
+        if (player.patternLines[targetRow][i] == -1 && selectedTileCount > 0) {
+          player.patternLines[targetRow][i] = tileType;
           selectedTileCount--;
         }
       }
@@ -143,8 +160,10 @@ module.exports = function() {
           selectedTileCount--;
         }
       });
-      this.players[playerIndex].patternLines[targetRow] = currentRow;
+      player.patternLines[targetRow] = currentRow;
 
+
+      //check for end of turn
       if (this.getTilesLeftInPlay() > 0) {
         this.currentTurn = (this.currentTurn + 1) % this.players.length;
       }
@@ -157,8 +176,7 @@ module.exports = function() {
       this.roundCount++;
       this.currentTurn = this.roundCount % this.players.length; //next player starts each round
       //calculate points/updateWalls
-      this.updatePlayerBoards();
-      //
+      this.processPlayerBoardsAtEndTurn();
 
       //this.calculatePoints(); //updates walls too
       this.fillFactories();
@@ -166,14 +184,14 @@ module.exports = function() {
     }
 
     getTilesLeftInPlay() {
-      let output = 0;
+      let output = this.communityPool.length;
       this.factories.forEach(factory => {
         output += factory.length;
       });
       return output;
     }
 
-    updatePlayerBoards() {
+    processPlayerBoardsAtEndTurn() {
       this.players.forEach(player => {
         //identify completed rows
         let completedPatternLineIndexes = [];
@@ -194,7 +212,7 @@ module.exports = function() {
           let columnIndex = this.getColumnFromRow(rowIndex, tileType); 
 
           player.updateWall(tileType, rowIndex, columnIndex);
-
+          player.clearFloorLine();
         }
         //update points
         //reset line
