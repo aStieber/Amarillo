@@ -1,6 +1,7 @@
 const { Game, Player } = require('./gameServer');
 
 const express = require('express');
+const sassMiddleware = require('node-sass-middleware');
 const path = require('path');
 
 const app = express();
@@ -9,6 +10,14 @@ const io = require('socket.io')(server);
 
 let rooms = 0;
 
+// https://github.com/sass/node-sass-middleware#express-example
+app.use(sassMiddleware({
+  src: __dirname,
+  dest: path.join(__dirname, 'css'),
+  // debug: true,
+  outputStyle: 'compressed',
+  prefix: '/css', // Where prefix is at <link rel="stylesheets" href="prefix/style.css"/>
+}));
 app.use(express.static('.'));
 
 app.get('/', (req, res) => {

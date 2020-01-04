@@ -1,0 +1,37 @@
+$tileColors: #1066ff, #ffbf00, #ff1e00, #18a100, #00f2ff;
+
+.tile {
+    max-height: 32px;
+    min-height: 32px;
+    max-width: 32px;
+    min-width: 32px;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 5px;
+    background: #444;
+    transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+
+    &:before {
+        content:'';
+        float:left;
+        padding-top:100%;
+    }
+
+    @for $i from 1 through length($tileColors) {
+        $c: nth($tileColors, $i);
+
+        &[type="#{$i - 1}"] {
+            &.placed, &.walltile {
+                background: $c;
+            }
+            &.option {
+                border: 2px dotted $c;
+            }
+        }
+    }
+}
+
+.selectedTile {
+    filter: opacity(50%);
+}
