@@ -1,7 +1,9 @@
-(function init() {
-  let currentGameState;
-  let roomID;
-  let userID;
+(function init() { 
+  let g_gameState;
+  let g_clientPlayer;
+  let g_isClientsTurn = false;
+  let g_roomID;
+  let g_userID;
 
   // const socket = io.connect('http://tic-tac-toe-realtime.herokuapp.com'),
   const socket = io.connect('http://localhost:5000');
@@ -9,57 +11,108 @@
   if (!Cookies.get('ID')) {
     Cookies.set('ID', Math.random().toString(36).substr(2, 9), {expires: 1000, path: ''}); 
   }
-  userID = Cookies.get('ID');
+  g_userID = Cookies.get('ID');
 
-  //D&D
-  document.addEventListener('dragstart', function(event) {
-    console.log('started drag')
-    event.dataTransfer.setData('Text', JSON.stringify({
-      factoryIndex: event.target.parentElement.attributes.factoryIndex.value,
-      tileType: event.target.attributes.type.value
-    }));
-  });
+  let g_turnStateMachine = new StateMachine({
+    init: 'idle',
+    transitions: [
+      { name: 'beginTurn', from: 'idle',  to: 'fSelect' },
+      { name: 'factorySelect', from: 'fSelect', to: 'plSelect' },
+      { name: 'factoryUnselect', from: 'plSelect', to: 'fSelect' },
+      { name: 'patternLineSelect', from: 'plSelect', to: 'endTurn' }
+    ],
+    methods: {
+      onBeginTurn: function() { 
+        console.log("onBeginTurn");
+        $('.tile').off('click');
+        $('.factory .tile').on('click', element => {
+          let tileType = element.target.attributes.type.value;
+          let fIndex = element.target.attributes.factoryIndex.value;
+          let factoryIndex = (fIndex == -1 ? g_gameState.factories.length - 1 : fIndex);
 
-  document.addEventListener('dragenter', function(event) {
-    if ( event.target.classList.contains('droptarget') ) {
-      event.target.style.border = '2px dotted red';
+          //highlight selected type in factory;
+          let selectedTiles = $('#factories').children().eq(factoryIndex).find('[type="' + tileType + '"]');
+          selectedTiles.toggleClass('selectedTile');
+          
+          //highlight possible rows;
+          //highlightPatternLines(tileType, selectedTiles.length);
+          //iterate through player patternlines
+          
+          //apply styling to n tiles
+
+          let rowsToHighlight = [];
+          for (let r = 0; r < 5; r++) {
+            let tileCount = 0;
+            let rowMatch = true;
+            for (let c = 0; c < g_clientPlayer.patternLines[r].length; c++) {
+              cell = g_clientPlayer.patternLines[r][c];
+              if (cell === -1) continue;
+              if (cell === tileType) tileCount++;
+              else  {
+                rowMatch = false;
+                break;
+              }
+            };
+
+            if (rowMatch && tileCount < (r + 1)) 
+              rowsToHighlight.push({index: r, tileCount: tileCount});
+          }
+
+          rowsToHighlight.forEach(row => {
+            $(`#patternLines .patternLine[patternlineindex="${row.index}"]`).children()
+              .slice(row.tileCount, row.tileCount + selectedTiles.length)
+              .attr('type', tileType)
+              .toggleClass('option');
+          });
+
+          g_turnStateMachine.factorySelect();
+        }); 
+      },
+      onFactorySelect: function() { 
+        console.log('Factory selected.');
+        $(".tile").off('click');
+        $(".selectedTile").on('click', element => {
+          g_turnStateMachine.factoryUnselect();
+        }); 
+        $('.option').on('click', element => {
+          g_turnStateMachine.patternLineSelect(element);
+        });
+      },
+      onFactoryUnselect: function() { 
+        console.log('Factory unselected.') 
+        $('.tile').off('click');
+        $('.selectedTile').toggleClass('selectedTile');
+        $('.tile.option').toggleClass('option');
+        this.onBeginTurn();
+      },
+      onPatternLineSelect: function(smData, element) {
+        console.log('Pattern line selected.');
+        $('.tile').off('click');
+        socket.emit('clientMove', { 
+          factoryIndex: $('.selectedTile:first').attr('factoryindex'),
+          tileType: $(element.target).attr('type'),
+          targetRow: $(element.target.parentElement).attr('patternlineindex'),
+          userID: g_userID,
+          room: g_roomID
+        });
+        this.beginTurn();
+      }
     }
   });
 
-  document.addEventListener('dragover', function(event) {
-    event.preventDefault();
-  });
-
-  document.addEventListener('dragleave', function(event) {
-    if (event.target.classList.contains('droptarget')) {
-      event.target.style.border = '';
-    }
-  });
-
-  document.addEventListener('drop', function(event) {
-  event.preventDefault();
-  if (event.target.classList.contains('droptarget')) {
-    event.target.style.border = '';
-    var data = JSON.parse(event.dataTransfer.getData('Text'));
-    if (data.factoryIndex === null || data.tileType === null) return;
-    console.log('arst');
-    socket.emit('clientMove', {
-      room: roomID,
-      targetRow: event.target.parentElement.attributes.patternLineIndex.value,
-      userID: userID,
-      ...data
-    });
-  }
-});
-
-  function updateFactories(factories, isClientsTurn=false) {
+  function updateFactories(factories) {
     $('.factories').empty();
     let i = 0;
     factories.forEach(factory => {
       factory.sort();
-      let newDiv = `<div class="factory flex-container" factoryIndex="${i}">`
+      let newDiv = `<div class="factory flex-container">`
       factory.forEach(tile => {
-        newDiv += `<div class="tile" type="${tile}" draggable="${isClientsTurn.toString()}"></div>`
+        newDiv += `<div 
+          class="tile placed" 
+          type="${tile}" 
+          enabled="${g_isClientsTurn.toString()}" 
+          factoryIndex="${i}"></div>
+        `
       });
       newDiv += '</div>'
       $('.factories').append(newDiv);
@@ -67,12 +120,12 @@
     });
   }
 
-  function updateCommunityPool(pool, isClientsTurn=false) {
+  function updateCommunityPool(pool) {
     pool.sort();
     $('#communityPool').remove();
     let newDiv = '<div id="communityPool" class="communityPool factory flex-container" factoryIndex="-1">'
     pool.forEach(tile => {
-      newDiv += `<div class="tile" type="${tile}" draggable="${isClientsTurn.toString()}"></div>`
+      newDiv += `<div class="tile placed" type="${tile}" draggable="${g_isClientsTurn.toString()}"></div>`
     });
     newDiv += '</div>'
     $('#centerBoard').append(newDiv);
@@ -89,9 +142,7 @@
       player.patternLines.forEach(patternLine => {
         patternLinesHTML += `<div class="patternLine" patternLineIndex="${i}">`;
         patternLine.forEach(tileType => {
-          let classList = 'tile';
-          if (tileType == -1) classList += ' droptarget';
-          patternLinesHTML += `<div class="${classList}" type="${tileType}"></div>`;
+          patternLinesHTML += `<div class="tile${tileType !== -1 ? ' placed' : ""}" type="${tileType}"></div>`;
         });
         patternLinesHTML += '</div>';
         i++;
@@ -102,7 +153,7 @@
       player.wall.forEach(wallLine => {
         wallHTML += `<div class="patternLine">`;
         wallLine.forEach(tileType => {
-          wallHTML += `<div class="tile" type="${t%5}" occupied=${tileType >= 0}></div>`;
+          wallHTML += `<div class="tile walltile" type="${t%5}" occupied=${tileType >= 0}></div>`;
           t++
         });
         wallHTML += '</div>';
@@ -128,23 +179,11 @@
       `
 
       $('.playerMats').append(newPlayerMatHTML);
-      if (userID === player.userID) {
+      if (g_userID === player.userID) {
 
       }
     });    
   }
-
-  $('#setTiles').on('click', () => {
-    let i =0;
-    //iterate through wall, build colors
-    $('#playerWall').children().each(function (){
-      $(this).children().each(function (){
-        $(this).attr("type", i % 5);
-        i++;
-      });
-      i++;
-    });
-  });
 
   // Create a new game. Emit newGame event.
   $('#createGame').on('click', () => {
@@ -152,15 +191,15 @@
     if (!name) {
       name = "Nameless Buffoon";
     }
-    socket.emit('createGame', { name, userID });
+    socket.emit('createGame', { name: name, userID: g_userID });
   });
 
   //Start a created game.
   $('#startGame').on('click', () => {
-    socket.emit('startGame', {room: roomID});
+    socket.emit('startGame', {room: g_roomID});
   });
 
-  // Join an existing game on the entered roomId. Emit the joinGame event.
+  // Join an existing game on the entered roomID. Emit the joinGame event.
   $('#join').on('click', () => {
     const name = $('#nameJoin').val();
     const roomID = $('#room').val();
@@ -173,7 +212,7 @@
   });
 
   socket.on('gameCreated', (data) => {
-    roomID = data.room;
+    g_roomID = data.room;
     const message = `Connected to ${data.room} as ${data.name}.`;
     $('#statusSpan').text(message);
     $('#nameInput').hide();
@@ -182,14 +221,26 @@
   });
 
   socket.on('gameUpdate', (data) => {
-    currentGameState = data;
+    g_gameState = data;
+    $('#menuButtons').hide();
 
-    let isClientsTurn = true;
-    data.players.forEach(player => {
-      isClientsTurn |= (player.userID === userID);
+    g_gameState.players.forEach(player => {
+      if (player.userID === g_userID) {
+        g_clientPlayer = player;
+      }
     });
-    updateFactories(data.factories, isClientsTurn);
-    updateCommunityPool(data.communityPool, isClientsTurn);
+    g_isClientsTurn = g_gameState.currentTurnUserID === g_userID;
+
+    updateFactories(data.factories);
+    updateCommunityPool(data.communityPool);
     updatePlayerMats(data.players, data.wallOffset);
+
+    if (g_isClientsTurn) {
+      g_turnStateMachine.beginTurn();
+    }
+
   });
+
+
+
 }());

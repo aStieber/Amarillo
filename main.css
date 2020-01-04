@@ -2,6 +2,18 @@ body {
     background-color: #444;
 }
 
+.menuButton {
+    background-color: #888;
+}
+
+.disable-selection {
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer */
+    -khtml-user-select: none; /* KHTML browsers (e.g. Konqueror) */
+    -webkit-user-select: none; /* Chrome, Safari, and Opera */
+    -webkit-touch-callout: none; /* Disable Android and iOS callouts*/
+}
+
 .flex-container {
     padding: 0;
     margin: 0;
@@ -13,21 +25,6 @@ body {
     display: flex;
     -webkit-flex-flow: row;
     justify-content: space-around;
-}
-
-.factory.tile {
-    background: tomato;
-    margin: 5px;
-    color: white;
-    font-weight: bold;
-    font-size: 1.5em;
-    text-align: center;
-    height:auto;
-}
-.tile:before {
-    content:'';
-    float:left;
-    padding-top:100%;
 }
 
 .factories {
@@ -49,34 +46,6 @@ body {
     flex-wrap: wrap;
 }
 
-.tile {
-    width: 20%;
-    border: 2px solid black;
-    border-radius: 5px;
-    padding: 15px;
-    margin: 5px;
-}
-
-.tile[type="0"] {
-    background: #1066FF;
-}
-
-.tile[type="1"] {
-    background: #ffbf00;
-}
-
-.tile[type="2"] {
-    background: #ff1e00;
-}
-
-.tile[type="3"] {
-    background: #1a1a1a;
-}
-
-.tile[type="4"] {
-    background: #00f2ff;
-}
-
 .gameBoard{
     display: flex;
     flex-direction: column;
@@ -92,4 +61,8 @@ body {
     flex-direction: row;
     justify-content: center;
     padding: 8px;
+}
+
+#status {
+    color: white;
 }

@@ -1,0 +1,86 @@
+.factory.tile {
+    margin: 5px;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5em;
+    text-align: center;
+    height:auto;
+}
+.tile:before {
+    content:'';
+    float:left;
+    padding-top:100%;
+}
+
+.tile {
+    width: 20%;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 5px;
+    transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.tile.placed[type="0"] {
+    background: #1066FF;
+}
+
+.tile.placed[type="1"] {
+    background: #ffbf00;
+}
+
+.tile.placed[type="2"] {
+    background: #ff1e00;
+}
+
+.tile.placed[type="3"] {
+    background: #18a100;
+}
+
+.tile.placed[type="4"] {
+    background: #00f2ff;
+}
+
+.tile.option[type="0"] {
+    border: 2px dotted #1066FF;
+}
+
+.tile.option[type="1"] {
+    border: 2px dotted #ffbf00;
+}
+
+.tile.option[type="2"] {
+    border: 2px dotted #ff1e00;
+}
+
+.tile.option[type="3"] {
+    border: 2px dotted #18a100;
+}
+
+.tile.option[type="4"] {
+    border: 2px dotted #00f2ff;
+}
+
+.tile.walltile[type="0"] {
+    background: #1066FF;
+}
+
+.tile.walltile[type="1"] {
+    background: #ffbf00;
+}
+
+.tile.walltile[type="2"] {
+    background: #ff1e00;
+}
+
+.tile.walltile[type="3"] {
+    background: #18a100;
+}
+
+.tile.walltile[type="4"] {
+    background: #00f2ff;
+}
+
+.selectedTile {
+    filter: opacity(50%);
+}

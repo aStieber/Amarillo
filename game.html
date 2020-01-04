@@ -5,6 +5,7 @@
         <title>Amarillo</title>
         <link rel="stylesheet" href="main.css">
         <link rel="stylesheet" href="playerMat.css">
+        <link rel="stylesheet" href="tile.css">
         <link rel="stylesheet" href="node_modules/skeleton-css/css/skeleton.css">
     </head>
     <body>
@@ -21,19 +22,19 @@
                 <button id="join">Join Game</button>
             </div>
             -->
-            Status: <span id="statusSpan">Not connected</span>
-            <div>
-                <button id="createGame">Create Game</button>
-                <button id="startGame" style="color: green;display:none;">Start Game</button>
+            <div id="status">
+                Status: <span id="statusSpan">Not connected</span>
+            </div>
+            <div id="menuButtons">
+                <button id="createGame" class="menuButton" style="color: white;">Create Game</button>
+                <button id="startGame" class="menuButton" style="color: #2E2;display:none;">Start Game</button>
                 <input type="text" placeholder="Your Name" id="nameInput">                
             </div>
-            <button id="doStuff">Do stuff</button>
-            <button id="setTiles">set</button>
             <div class="gameBoard flex-container" >
                 <div id="centerBoard">
                     <div id="factories" class="factories"></div>
                 </div>
-                <div class="playerMats">
+                <div class="playerMats disable-selection" >
                     <div class="opponentMats">
                     </div>
                 </div>      
@@ -42,6 +43,7 @@
         <script src="node_modules/jquery/dist/jquery.min.js"></script>
         <script src="node_modules/js-cookie/src/js.cookie.js"></script>
         <script src="/socket.io/socket.io.js"></script>
+        <script src='/deps/state-machine.min.js'></script>
         <script src="gameClient.js"></script>
     </body>
 </html>

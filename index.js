@@ -43,7 +43,6 @@ io.on('connection', (socket) => {
   socket.on('startGame', function(data){
     //decide who goes first
     gameMap[data.room].endTurn();
-    console.log('start game')
     socket.emit('gameUpdate', gameMap[data.room].getState());
   });
 

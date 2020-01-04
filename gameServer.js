@@ -35,18 +35,8 @@ module.exports = function() {
       this.wall = newWall;
     }
 
-
-    // Set the currentTurn for player to turn and update UI to reflect the same.
-    setCurrentTurn(turn) {
-      this.currentTurn = turn;
-    }
-
     getPlayerName() {
       return this.name;
-    }
-
-    getCurrentTurn() {
-      return this.currentTurn;
     }
   }
 
@@ -78,21 +68,38 @@ module.exports = function() {
       let targetRow = data.targetRow;
       let userID = data.userID;
       let selectedTileCount = 0;
-      for (let f = 0; f < 4; f++) {
-        if (this.factories[factoryIndex][f] == tileType) {
-          selectedTileCount++;
+
+      if (factoryIndex == -1) //from the communityPool
+      { 
+        let newCommunityPool = []; 
+        for (let f = 0; f < this.communityPool.length; f++) {
+          if (this.communityPool[f] == tileType) {
+            selectedTileCount++;
+          }
+          else {
+            newCommunityPool.push(this.communityPool[f]);
+          }
         }
-        else {
-          this.communityPool.push(this.factories[factoryIndex][f])
-        }
+        this.communityPool = newCommunityPool;
       }
-      this.factories[factoryIndex] = [];
+      else {
+        console.log(this.factories[factoryIndex])
+        for (let f = 0; f < 4; f++) {
+          if (this.factories[factoryIndex][f] == tileType) {
+            selectedTileCount++;
+          }
+          else {
+            this.communityPool.push(this.factories[factoryIndex][f]);
+          }
+        }
+        this.factories[factoryIndex] = [];
+      }
+      
 
       let playerIndex = 0;
       for (playerIndex; playerIndex < this.players.length; playerIndex++)
         if (this.players[playerIndex].userID === userID) break;
       let currentRow = this.players[playerIndex].patternLines[targetRow];
-      console.log(this.players[playerIndex].patternLines[targetRow])
       for (let i = 0; i < this.players[playerIndex].patternLines[targetRow].length; i++) {
         if (this.players[playerIndex].patternLines[targetRow][i] == -1 && selectedTileCount > 0) {
           this.players[playerIndex].patternLines[targetRow][i] = tileType;
@@ -106,6 +113,8 @@ module.exports = function() {
         }
       });
       this.players[playerIndex].patternLines[targetRow] = currentRow;
+
+      this.currentTurn = (this.currentTurn + 1) % this.players.length;
     }
 
     endTurn() {
@@ -137,7 +146,7 @@ module.exports = function() {
         factories: this.factories,
         communityPool: this.communityPool,
         wallOffset: this.wallOffset,
-        currentTurn: this.currentTurn
+        currentTurnUserID: this.players[this.currentTurn].userID
       };
     }
 
