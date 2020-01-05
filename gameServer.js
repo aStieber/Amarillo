@@ -54,11 +54,13 @@ class Player {
   }
 
   clearFloorLine() {
-    //                   -1  -1  -2  -2  -2  -3   -3
-    const penaltyList = [-1, -2, -4, -6, -8, -11, -14];
-    this.score = Math.max(this.score + penaltyList[this.floorLine.length - 1], 0);
+    if (this.floorLine.length) {
+      //                   -1  -1  -2  -2  -2  -3   -3
+      const penaltyList = [-1, -2, -4, -6, -8, -11, -14];
+      this.score = Math.max(this.score + penaltyList[this.floorLine.length - 1], 0);
+      this.floorLine = [];
+    }
   }
-
 
   recursiveSearch(wallCopy, row, column, searchDirection='h') {
     if (wallCopy[row][column] !== -1) {
@@ -178,7 +180,6 @@ class Game {
     //calculate points/updateWalls
     this.processPlayerBoardsAtEndTurn();
 
-    //this.calculatePoints(); //updates walls too
     this.fillFactories();
     this.communityPool = []; //should be empty right now anyway.
   }

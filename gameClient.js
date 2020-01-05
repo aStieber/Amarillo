@@ -26,8 +26,8 @@
         console.log("onBeginTurn");
         $('.tile').off('click');
         $('.factory .tile').on('click', element => {
-          let tileType = element.target.attributes.type.value;
-          let fIndex = element.target.attributes.factoryIndex.value;
+          let tileType = parseInt(element.target.attributes.type.value);
+          let fIndex = parseInt(element.target.attributes.factoryIndex.value);
 
           let selectedTiles;
           if (fIndex == -1) {
@@ -44,7 +44,7 @@
             let tileCount = 0;
             let rowMatch = true;
             for (let c = 0; c < g_clientPlayer.patternLines[r].length; c++) {
-              cell = g_clientPlayer.patternLines[r][c];
+              cell = parseInt(g_clientPlayer.patternLines[r][c]);
               if (cell === -1) continue;
               if (cell === tileType) tileCount++;
               else  {
@@ -53,12 +53,22 @@
               }
             };
 
-            if (rowMatch && tileCount < (r + 1)) 
+            let wallClear = true;
+            for (let i in g_clientPlayer.wall[r]) {
+              if (tileType === g_clientPlayer.wall[r][i])
+              {
+                wallClear = false;
+                break;
+              }
+            }
+
+            if (rowMatch && tileCount < (r + 1) && wallClear) 
               rowsToHighlight.push({index: r, tileCount: tileCount});
           }
 
+
           rowsToHighlight.forEach(row => {
-            $(`#patternLines .patternLine[patternlineindex="${row.index}"]`).children()
+            $(`.playerMat[user=${g_userID}] #patternLines .patternLine[patternlineindex="${row.index}"]`).children()
               .slice(row.tileCount, row.tileCount + selectedTiles.length)
               .attr('type', tileType)
               .toggleClass('option');
@@ -174,7 +184,7 @@
 
       //final product
       var newPlayerMatHTML = `
-        <div class="playerMat">
+        <div class="playerMat" user="${player.userID}">
           <div class="scoreboard">
             ${player.name}<br/>
             ${player.score} Points
@@ -192,11 +202,13 @@
           </div>
         </div>
       `
-
-      $('.playerMats').append(newPlayerMatHTML);
       if (g_userID === player.userID) {
-
+        $('.playerMats').prepend(newPlayerMatHTML);
       }
+      else {
+        $('.opponentMats').append(newPlayerMatHTML);
+      }
+
     });    
   }
 
@@ -220,21 +232,23 @@
   $('#joinGame').on('click', () => {
     let name = $('#nameInput').val();
     if (!name) name = "Nameless Buffoon";
-    let roomID = prompt("Please enter the room ID you with to join./nExample: room-1");
+    let roomID = prompt("Please enter the room ID you with to join. Example: r1");
     if (!roomID)
     {
       alert('Please enter a roomID.')
       return;
     }
-    socket.emit('joinGame', { name, room: roomID });
+    socket.emit('joinGame', { name, room: roomID, userID: g_userID});
   });
 
   socket.on('gameConnected', (data) => {
+    console.log('gameConnected'+  data)
     g_roomID = data.room;
-    const message = `Someone onnected to ${data.room} as ${data.name}.`;
+    const message = `${data.userID === g_userID ? 'You' : 'Someone'} connected to ${data.room} as ${data.name}.`;
     $('#statusSpan').text(message);
     $('#nameInput').hide();
     $('#createGame').hide();
+    $('#joinGame').hide();
     $('#startGame').show();
   });
 
@@ -248,6 +262,9 @@
       }
     });
     g_isClientsTurn = g_gameState.currentTurnUserID === g_userID;
+
+    if (g_isClientsTurn) $('#statusSpan').text(`It's your turn.`); 
+    else $('#statusSpan').text(`It's someone else's turn.`);
 
     updateFactories(data.factories);
     updateCommunityPool(data.communityPool);
