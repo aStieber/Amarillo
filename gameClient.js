@@ -206,10 +206,8 @@
 
   // Create a new game. Emit newGame event.
   $('#createGame').on('click', () => {
-    name = $('#nameInput').val();
-    if (!name) {
-      name = "Nameless Buffoon";
-    }
+    let name = $('#nameInput').val();
+    if (!name) name = "Nameless Buffoon";
     socket.emit('createGame', { name: name, userID: g_userID });
   });
 
@@ -219,20 +217,21 @@
   });
 
   // Join an existing game on the entered roomID. Emit the joinGame event.
-  $('#join').on('click', () => {
-    const name = $('#nameJoin').val();
-    const roomID = $('#room').val();
-    if (!name || !roomID) {
-      alert('Please enter your name and game ID.');
+  $('#joinGame').on('click', () => {
+    let name = $('#nameInput').val();
+    if (!name) name = "Nameless Buffoon";
+    let roomID = prompt("Please enter the room ID you with to join./nExample: room-1");
+    if (!roomID)
+    {
+      alert('Please enter a roomID.')
       return;
     }
     socket.emit('joinGame', { name, room: roomID });
-    player = new Player(name, P2);
   });
 
-  socket.on('gameCreated', (data) => {
+  socket.on('gameConnected', (data) => {
     g_roomID = data.room;
-    const message = `Connected to ${data.room} as ${data.name}.`;
+    const message = `Someone onnected to ${data.room} as ${data.name}.`;
     $('#statusSpan').text(message);
     $('#nameInput').hide();
     $('#createGame').hide();

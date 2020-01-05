@@ -39,16 +39,15 @@ io.on('connection', (socket) => {
     socket.join(roomName);
     gameMap[roomName] = new Game(roomName, 2);
     gameMap[roomName].addPlayer(data.name, data.userID);
-    socket.emit('gameCreated', { name: data.name, room: roomName });
+    socket.emit('gameConnected', { name: data.name, room: roomName });
   });
 
   // Connect the Player 2 to the room he requested. Show error if room full.
   socket.on('joinGame', function (data) {
     var room = io.nsps['/'].adapter.rooms[data.room];
     if (room && room.length === 1) {
-      socket.join(data.room);
-      socket.broadcast.to(data.room).emit('player1', {});
-      socket.emit('player2', { name: data.name, room: data.room })
+      gameMap[data.room].addPlayer(data.name, data.userID);
+      socket.emit('gameConnected', { name: data.name, room: data.room })
     } else {
       socket.emit('err', { message: 'Sorry, The room is full!' });
     }
