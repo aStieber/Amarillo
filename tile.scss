@@ -34,7 +34,7 @@ $tileColors: #7300de, #ffbf00, #ff1e00, #18a100, #0085de;
 }
 
 
-.tile[type="5"] {
+.tile .placed[type="5"] {
     background:
         linear-gradient(135deg, #ECEDDC 25%, transparent 25%) -50px 0,
         linear-gradient(225deg, #ECEDDC 25%, transparent 25%) -50px 0,

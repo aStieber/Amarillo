@@ -187,21 +187,22 @@ class Game {
       }
     }
 
-    //update player's pattern lines
-    let currentRow = player.patternLines[targetRow];
-    for (let i = 0; i < player.patternLines[targetRow].length; i++) {
-      if (player.patternLines[targetRow][i] == -1 && selectedTileCount > 0) {
-        player.patternLines[targetRow][i] = tileType;
-        selectedTileCount--;
+    if (targetRow !== -1) { //if player didn't place in floor line
+      let currentRow = player.patternLines[targetRow];
+      for (let i = 0; i < player.patternLines[targetRow].length; i++) {
+        if (player.patternLines[targetRow][i] == -1 && selectedTileCount > 0) {
+          player.patternLines[targetRow][i] = tileType;
+          selectedTileCount--;
+        }
       }
-    }
-    currentRow.forEach(element=> {
-      if (element == -1 && selectedTileCount > 0) {
-        element = tileType;
-        selectedTileCount--;
-      }
-    });
-    player.patternLines[targetRow] = currentRow;
+      currentRow.forEach(element=> {
+        if (element == -1 && selectedTileCount > 0) {
+          element = tileType;
+          selectedTileCount--;
+        }
+      });
+      player.patternLines[targetRow] = currentRow;
+    } 
 
 
     //check for end of turn

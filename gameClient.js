@@ -76,6 +76,12 @@
               .toggleClass('option');
           });
 
+          //additionally, select the appropriate amount of floor lines (always an option)
+          $(`.playerMat[user=${g_userID}] #floorLine .tile[type="-1"]`)
+              .slice(0, selectedTiles.length)
+              .attr('type', tileType)
+              .toggleClass('option');
+
           g_turnStateMachine.factorySelect();
         }); 
       },
@@ -86,12 +92,25 @@
           g_turnStateMachine.factoryUnselect();
         }); 
         $('.option').on('click', element => {
-          console.log('Pattern line selected.');
           $('.tile').off('click');
+
           let tileType = $(element.target).attr('type');
-          let patternLineIndex = $(element.target.parentElement).attr('patternlineindex');
-          let selectedCount = $('.placed.selectedTile').length;
-          let highlightedCount = $(`.patternLine[patternlineindex=${patternLineIndex}] .option`).length;
+          let patternLineIndex = 0;
+          let selectedCount = 0;
+          let highlightedCount = 0;
+          //handle floor line a lil differently
+          if ($(element.target).parent().attr('id') === 'floorLine') {
+            console.log('Floor line selected.');
+            patternLineIndex = -1;
+            selectedCount = $(`#floorLine .option`).length;
+          }
+          else { //regular pattern line
+            console.log('Pattern line selected.');
+            selectedCount = $('.placed.selectedTile').length;
+            patternLineIndex = $(element.target.parentElement).attr('patternlineindex');
+            highlightedCount = $(`.patternLine[patternlineindex=${patternLineIndex}] .option`).length;
+          }
+
 
           socket.emit('clientMove', { 
             factoryIndex: $('.selectedTile:first').attr('factoryindex'),
@@ -180,8 +199,9 @@
       const floorLineText = ['-1', '-1', '-2', '-2', '-2', '-3', '-3'];
       let floorLineHTML = '';
       for (let f = 0; f < 7; f++) {
-        let tile = (player.floorLine.length > f) ? player.floorLine[f] : -1;
-        floorLineHTML += `<div class="tile placed floorLineTile" type="${tile}">${floorLineText[f]}</div>`;
+        let floorTilePlaced = (player.floorLine.length > f);
+        let tile =  floorTilePlaced ? player.floorLine[f] : -1;
+        floorLineHTML += `<div class="tile${floorTilePlaced ? ' placed' : ''}" type="${tile}">${floorLineText[f]}</div>`;
       }
 
       //final product
