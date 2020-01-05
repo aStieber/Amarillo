@@ -2,7 +2,6 @@ const { JSDOM } = require('jsdom');
 const { window } = new JSDOM('<html></html>');
 const $ = require('jquery')(window);
 
-//$.extend(true, (Array.isArray(a) ? [] : {}), a);
 const deepCopyArray = (a) => $.extend(true, (Array.isArray(a) ? [] : {}), a);
 
 class Player {
@@ -215,8 +214,6 @@ class Game {
         player.updateWall(tileType, rowIndex, columnIndex);
         player.clearFloorLine();
       }
-      //update points
-      //reset line
     });
   }
 

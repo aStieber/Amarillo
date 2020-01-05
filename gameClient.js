@@ -119,7 +119,7 @@
           factoryIndex="${i}"></div>
         `
       });
-      newDiv += '</div>'
+      newDiv += '</div>';
       $('.factories').append(newDiv);
       i++;
     });
@@ -164,13 +164,20 @@
         wallHTML += '</div>';
         t++
       });
+      //floor line
+      const floorLineText = ['-1', '-1', '-2', '-2', '-2', '-3', '-3'];
+      let floorLineHTML = '';
+      for (let f = 0; f < 7; f++) {
+        let tile = (player.floorLine.length > f) ? player.floorLine[f] : -1;
+        floorLineHTML += `<div class="tile placed floorLineTile" type="${tile}">${floorLineText[f]}</div>`;
+      }
 
       //final product
       var newPlayerMatHTML = `
         <div class="playerMat">
           <div class="scoreboard">
-            Name: ${player.name}
-            Score: ${player.score}
+            ${player.name}<br/>
+            ${player.score} Points
           </div>
           <div id="tileSection">
             <div id="patternLines">
@@ -179,6 +186,9 @@
             <div id="wall">
               ${wallHTML}
             </div>
+          </div>
+          <div id="floorLine">
+            ${floorLineHTML}
           </div>
         </div>
       `
@@ -249,7 +259,4 @@
     }
 
   });
-
-
-
 }());

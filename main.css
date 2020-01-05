@@ -28,7 +28,6 @@ body {
 }
 
 .factories {
-    width: 60%;
     display: flex;
     flex-direction: column;
 }
@@ -37,12 +36,19 @@ body {
     display: flex;
     border: 2px solid black;
     margin: 2px;
+    justify-content: center;
+}
+
+.factories .factory {
+    min-height: 76px;
 }
 
 .communityPool {
-    min-width: 40%;
+    min-width: 35%;
+    max-width: 35%; 
     background: #999;
     display: flex;
+    justify-content: center;
     flex-wrap: wrap;
 }
 
@@ -65,4 +71,11 @@ body {
 
 #status {
     color: white;
+}
+
+.scoreboard {
+    background: #bbb;
+    border: 2px solid black;
+    width: 20%;
+    padding-left: 8px;
 }
