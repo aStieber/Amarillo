@@ -104,7 +104,7 @@
         });
       },
       onFactoryUnselect: function() { 
-        console.log('Factory unselected.') 
+        console.log('Factory unselected.');
         $('.tile').off('click');
         $('.selectedTile').toggleClass('selectedTile');
         $('.tile.option').toggleClass('option');
@@ -122,14 +122,14 @@
     let i = 0;
     factories.forEach(factory => {
       factory.sort();
-      let newDiv = `<div class="factory flex-container">`
+      let newDiv = `<div class="factory flex-container">`;
       factory.forEach(tile => {
         newDiv += `<div 
           class="tile placed" 
           type="${tile}" 
           enabled="${g_isClientsTurn.toString()}" 
           factoryIndex="${i}"></div>
-        `
+        `;
       });
       newDiv += '</div>';
       $('.factories').append(newDiv);
@@ -140,11 +140,11 @@
   function updateCommunityPool(pool) {
     pool.sort();
     $('#communityPool').remove();
-    let newDiv = '<div id="communityPool" class="communityPool factory flex-container" factoryIndex="-1">'
+    let newDiv = '<div id="communityPool" class="communityPool factory flex-container" factoryIndex="-1">';
     pool.forEach(tile => {
-      newDiv += `<div class="tile placed" type="${tile}" draggable="${g_isClientsTurn.toString()}" factoryIndex="-1"></div>`
+      newDiv += `<div class="tile placed" type="${tile}" draggable="${g_isClientsTurn.toString()}" factoryIndex="-1"></div>`;
     });
-    newDiv += '</div>'
+    newDiv += '</div>';
     $('#centerBoard').append(newDiv);
   }
 
@@ -171,10 +171,10 @@
         wallHTML += `<div class="patternLine">`;
         wallLine.forEach(tileType => {
           wallHTML += `<div class="tile walltile" type="${t%5}" occupied=${tileType >= 0}></div>`;
-          t++
+          t++;
         });
         wallHTML += '</div>';
-        t++
+        t++;
       });
       //floor line
       const floorLineText = ['-1', '-1', '-2', '-2', '-2', '-3', '-3'];
@@ -203,7 +203,7 @@
             ${floorLineHTML}
           </div>
         </div>
-      `
+      `;
       if (g_userID === player.userID) {
         $('.playerMats').prepend(newPlayerMatHTML);
       }
@@ -214,8 +214,45 @@
     });    
   }
 
+  function onEndGame(endGameList) {
+    $('.factories').hide();
+    $('#communityPool').hide();
+        
+    let gridHTML = `
+      <table class="endGameTable">
+        <tr>
+          <th>Name</th>
+          <th>Ending Score</th>
+          <th>Rows Completed</th>
+          <th>Columns Completed</th>
+          <th>Colors Completed</th>
+          <th>Final Score</th>
+        </tr>
+    `; 
+    endGameList.forEach(obj => {
+      let finalScore = obj.endingScore + (obj.numRowsCompleted * 2) + (obj.numColumnsCompleted * 7) + (obj.numColorsCompleted * 10);
+      gridHTML += `
+        <tr>
+          <th>${obj.name}</th>
+          <th>${obj.endingScore}</th>
+          <th>${obj.numRowsCompleted}</th>
+          <th>${obj.numColumnsCompleted}</th>
+          <th>${obj.numColorsCompleted}</th>
+          <th>${finalScore}</th>
+        </tr>
+      `;
+    });
+    gridHTML += '</table>';
+
+    $('#centerBoard').append(gridHTML);
+  }
+
   $('#endTurn').on('click', () => {
     socket.emit('debugEndTurn', { room: g_roomID });
+  });
+
+  $('#endGame').on('click', () => {
+    onEndGame();
   });
 
   // Create a new game. Emit newGame event.
@@ -237,14 +274,14 @@
     let roomID = prompt("Please enter the room ID you with to join. Example: r1");
     if (!roomID)
     {
-      alert('Please enter a roomID.')
+      alert('Please enter a roomID.');
       return;
     }
     socket.emit('joinGame', { name, room: roomID, userID: g_userID});
   });
 
   socket.on('gameConnected', (data) => {
-    console.log('gameConnected'+  data)
+    console.log('gameConnected'+  data);
     g_roomID = data.room;
     const message = `${data.userID === g_userID ? 'You' : 'Someone'} connected to ${data.room} as ${data.name}.`;
     $('#statusSpan').text(message);
@@ -257,6 +294,9 @@
   socket.on('gameUpdate', (data) => {
     g_gameState = data;
     $('#menuButtons').hide();
+    if (data.endGameObject) {
+      onEndGame(data.endGameObject);
+    }
 
     g_gameState.players.forEach(player => {
       if (player.userID === g_userID) {

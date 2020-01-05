@@ -49,7 +49,7 @@ class Player {
     let hSearchScore = this.recursiveSearch(deepCopyArray(this.wall), rowIndex, columnIndex, 'h');
     let vSearchScore = this.recursiveSearch(deepCopyArray(this.wall), rowIndex, columnIndex, 'v');
     //if either search is exactly 1, only consider the other score. Not my fault, that's the rules.
-    this.score += (hSearchScore + vSearchScore)
+    this.score += (hSearchScore + vSearchScore);
     if (hSearchScore === 1 || vSearchScore === 1) {
        this.score -= 1; //this way, we don't have to worry about which is 1.
     }
@@ -184,9 +184,16 @@ class Game {
     //calculate points/updateWalls
     this.processPlayerBoardsAtEndTurn();
 
-    this.fillFactories();
-    this.communityPoolTaken = false;
-    this.communityPool = []; //should be empty right now anyway.
+    if (this.checkForEndOfGame()) {
+      console.log('game ended');
+      this.endGameJson = this.getEndGameObject();
+    }
+    else {
+      console.log('no completed row');
+      this.fillFactories();
+      this.communityPoolTaken = false;
+      this.communityPool = []; //should be empty right now anyway.
+    }
   }
 
   getTilesLeftInPlay() {
@@ -195,6 +202,25 @@ class Game {
       output += factory.length;
     });
     return output;
+  }
+
+  checkForEndOfGame() {
+    //if any player has a completed row, calculate final score for all players.
+    for (let p in this.players) {
+      let player = this.players[p];
+      for (let w in player.wall) {
+        let rowCompleted = true;
+        let wallLine = player.wall[w];
+        for (let e in wallLine) {
+          if (wallLine[e] === -1) { rowCompleted = false; }
+          break;
+        }
+        if (rowCompleted) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   processPlayerBoardsAtEndTurn() {
@@ -229,9 +255,12 @@ class Game {
   }
 
   fillFactories() {
-    for (let i = 0; i < (4 * 2 + 1); i++) {
+    console.log(this.tilePool)
+    this.factories = [];
+    let playerCount = this.players.length;
+    for (let i = 0; i < (playerCount * 2 + 1); i++) {
       if (this.tilePool.length >= 4) {
-        this.factories[i] = this.tilePool.slice(0, 4);
+        this.factories.push(this.tilePool.slice(0, 4));
         this.tilePool = this.tilePool.slice(4);
       }
       else {
@@ -249,7 +278,8 @@ class Game {
       factories: this.factories,
       communityPool: this.communityPool,
       wallOffset: this.wallOffset,
-      currentTurnUserID: this.players[this.currentTurn].userID
+      currentTurnUserID: this.players[this.currentTurn].userID,
+      endGameObject: (this.endGameObject ? this.endGameObject : false)
     };
   }
 
@@ -265,11 +295,63 @@ class Game {
       pool[i] = i % 5;
     }
     //fisher-yates
-    for (var i = 99; i > 0; i--) {
-      let j = getRandomInt(0, i + 1);
-      [pool[i], pool[j]] = [pool[j], pool[i]];
+    for (var f = 99; f > 0; f--) {
+      let j = getRandomInt(0, f + 1);
+      [pool[f], pool[j]] = [pool[j], pool[f]];
     }
     this.tilePool = pool;
+  }
+
+  getEndGameObject() {
+    let playerEndStates = [];
+    this.players.forEach(player => {
+      let numRowsCompleted = 0;
+      let numColumnsCompleted = 0;
+      let numColorsCompleted = 0;
+
+      //rows completed and colors completed
+      let colorCounts = [0, 0, 0, 0, 0];
+      for (let w in player.wall) {
+        let rowCompleted = true;
+        let wallLine = player.wall[w];
+        for (let e in wallLine) {
+          if (wallLine[e] === -1) { rowCompleted = false; }
+          else { colorCounts[wallLine[e]]++; }
+        }
+        if (rowCompleted) {
+          numRowsCompleted++;
+        }
+      }
+      //columns completed
+      for (let c = 0; c < 5; c++) {
+        let columnCompleted = true;
+        for (let w in player.wall) {
+          if (player.wall[w][c] === -1) {
+            columnCompleted = false;
+            break;
+          }
+        }
+        if (columnCompleted) {
+          numColumnsCompleted++;
+        }
+      }
+      //colors completed
+      colorCounts.forEach(count => {
+        if (count === 5)
+          numColorsCompleted++;
+      });
+
+      playerEndStates.push({
+        name: player.name,
+        userID: player.userID,
+        endingScore: player.score,
+        numRowsCompleted,
+        numColumnsCompleted,
+        numColorsCompleted
+      });
+    });
+
+    return playerEndStates;
   }
 }
 
