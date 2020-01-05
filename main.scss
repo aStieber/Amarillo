@@ -44,7 +44,7 @@ body {
 }
 
 .communityPool {
-    min-width: 35%;
+    min-width: 200px;
     max-width: 35%; 
     background: #999;
     display: flex;
@@ -54,8 +54,8 @@ body {
 
 .gameBoard{
     display: flex;
-    flex-direction: column;
-    justify-content: right-flex;
+    flex-direction: row;
+    justify-content: center;
 }
 
 .center{
@@ -73,9 +73,13 @@ body {
     color: white;
 }
 
-.scoreboard {
-    background: #bbb;
-    border: 2px solid black;
-    width: 20%;
-    padding-left: 8px;
+.opponentMats .playerMat {
+    transform: scale(.6);
+}
+
+.opponentMats {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-basis: auto;
 }

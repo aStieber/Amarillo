@@ -1,3 +1,5 @@
+/* global Cookies, io, StateMachine, $*/
+
 (function init() { 
   let g_gameState; //todo: use window.localstorage
   let g_clientPlayer;
@@ -6,7 +8,7 @@
   let g_userID;
 
   // const socket = io.connect('http://tic-tac-toe-realtime.herokuapp.com'),
-  const socket = io.connect('http://localhost:5000');
+  const socket = io.connect();
   //generate random ID number for this browser and store it in a cookie.
   if (!Cookies.get('ID')) {
     Cookies.set('ID', Math.random().toString(36).substr(2, 9), {expires: 1000, path: ''}); 
@@ -44,14 +46,14 @@
             let tileCount = 0;
             let rowMatch = true;
             for (let c = 0; c < g_clientPlayer.patternLines[r].length; c++) {
-              cell = parseInt(g_clientPlayer.patternLines[r][c]);
+              let cell = parseInt(g_clientPlayer.patternLines[r][c]);
               if (cell === -1) continue;
               if (cell === tileType) tileCount++;
               else  {
                 rowMatch = false;
                 break;
               }
-            };
+            }
 
             let wallClear = true;
             for (let i in g_clientPlayer.wall[r]) {
@@ -184,7 +186,7 @@
 
       //final product
       var newPlayerMatHTML = `
-        <div class="playerMat" user="${player.userID}">
+        <div class="playerMat" user="${player.userID}" isTurn="${g_gameState.currentTurnUserID === player.userID}">
           <div class="scoreboard">
             ${player.name}<br/>
             ${player.score} Points

@@ -33,6 +33,17 @@ $tileColors: #7300de, #ffbf00, #ff1e00, #18a100, #0085de;
     }
 }
 
+
+.tile[type="5"] {
+    background:
+        linear-gradient(135deg, #ECEDDC 25%, transparent 25%) -50px 0,
+        linear-gradient(225deg, #ECEDDC 25%, transparent 25%) -50px 0,
+        linear-gradient(315deg, #ECEDDC 25%, transparent 25%),
+        linear-gradient(45deg, #ECEDDC 25%, transparent 25%);
+    background-size: 14px 14px;
+    background-color: #EC173A;
+}
+
 .selectedTile {
     filter: opacity(50%);
 }

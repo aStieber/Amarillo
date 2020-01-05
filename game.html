@@ -10,23 +10,11 @@
     </head>
     <body>
         <div class="container">
-            <!--
-            <div class="menu">
-                <h1>Tic - Tac - Toe</h1>
-                <h4>Create a new Game</h4>
-                <input type="text" name="name" id="nameNew" placeholder="Enter your name" required>
-                <br><br>
-                <h4>Join an existing game</h4>
-                <input type="text" name="name" id="nameJoin" placeholder="Enter your name" required>
-                <input type="text" name="room" id="room" placeholder="Enter Game ID" required>
-                <button id="join">Join Game</button>
-            </div>
-            -->
-            <div id="status">
-                Status: <span id="statusSpan">Not connected</span>
-            </div>
             <button id=endTurn> end turn</button>
             <div id="menuButtons">
+                <div id="status">
+                    Status: <span id="statusSpan">Not connected</span>
+                </div>
                 <button id="joinGame" class="menuButton" style="color:white;">Join Game</button>
                 <button id="createGame" class="menuButton" style="color: white;">Create Game</button>
                 <button id="startGame" class="menuButton" style="color: #2E2;display:none;">Start Game</button>
@@ -37,10 +25,9 @@
                     <div id="factories" class="factories"></div>
                 </div>
                 <div class="playerMats disable-selection" >
-                    <div class="opponentMats">
-                    </div>
                 </div>
-
+                <div class="opponentMats">
+                </div>
             </div>
         </div>
         <script src="node_modules/jquery/dist/jquery.min.js"></script>

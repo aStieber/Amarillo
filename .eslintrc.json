@@ -1,15 +1,10 @@
 {
-  "extends": "airbnb-base",
-  "plugins": [
-    "import"
-  ],
-  "rules": {
-    "no-tabs": 0,
-    "linebreak-style": 0,
-    "no-undef": 0,
-    "no-plusplus": 0,
-    "no-alert": 0,
-    "no-bitwise": 0,
-    "class-methods-use-this": 0
+  "extends": "eslint:recommended",
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "rules" : {
+    "no-console": "off"
   }
 }

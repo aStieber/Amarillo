@@ -1,4 +1,6 @@
-const { Game, Player } = require('./gameServer');
+/* global require, __dirname, process */
+
+const { Game } = require('./gameServer');
 
 const express = require('express');
 const sassMiddleware = require('node-sass-middleware');
@@ -37,7 +39,7 @@ io.on('connection', (socket) => {
   socket.on('createGame', (data) => {
     let roomName = `r${++rooms}`;
     socket.join(roomName);
-    gameMap[roomName] = new Game(roomName, 2);
+    gameMap[roomName] = new Game(roomName);
     gameMap[roomName].addPlayer(data.name, data.userID);
     socket.emit('gameConnected', { name: data.name, room: roomName, userID: data.userID });
   });

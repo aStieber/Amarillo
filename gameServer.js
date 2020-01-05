@@ -1,3 +1,5 @@
+/* global require, module */
+
 const { JSDOM } = require('jsdom');
 const { window } = new JSDOM('<html></html>');
 const $ = require('jquery')(window);
@@ -81,7 +83,7 @@ class Player {
 }
 
 class Game {
-  constructor(roomName, numPlayers=2) {
+  constructor(roomName) {
     this.roomName = roomName;
     this.tilePool = [];
     this.factories = [];
@@ -90,10 +92,7 @@ class Game {
     this.wallOffset = 0;
     this.currentTurn = 0;
     this.roundCount = -1;
-
-    //initialize factories
-    for (var i = 0; i < (numPlayers*2+1); i++)
-      this.factories.push([]);
+    this.communityPoolTaken=false;
 
     this.refillTilePool();
   }
@@ -101,7 +100,7 @@ class Game {
   addPlayer(name, userID) {
     this.players.push(new Player(name, userID));
     console.log(`Added player to game ${this.roomName}: ${name} | ${userID}`);
-  };
+  }
 
   onClientMove(data) {
     let factoryIndex = data.factoryIndex;
@@ -110,6 +109,14 @@ class Game {
     let userID = data.userID;
     let floorLineCount = data.floorLineCount; //number of tiles to add to the floor line.
     let selectedTileCount = 0;
+
+    let player = {};
+    for (let i = 0; i < this.players.length; i++) {
+      if (this.players[i].userID === userID) {
+        player = this.players[i];
+        break;
+      }
+    }
 
     //Move tiles to pool, count selectedTiles
     if (factoryIndex == -1) //from the communityPool
@@ -122,6 +129,11 @@ class Game {
         else { newCommunityPool.push(this.communityPool[f]); }
       }
       this.communityPool = newCommunityPool;
+      if (!this.communityPoolTaken) {
+        this.communityPoolTaken = true;
+        console.log("community Pool cherry popped");
+        player.floorLine.push(5);
+      }
     }
     else {
       for (let f = 0; f < 4; f++) {
@@ -131,14 +143,6 @@ class Game {
         else { this.communityPool.push(this.factories[factoryIndex][f]); }
       }
       this.factories[factoryIndex] = [];
-    }
-
-    let player = {};
-    for (let i = 0; i < this.players.length; i++) {
-      if (this.players[i].userID === userID) {
-        player = this.players[i];
-        break;
-      };
     }
 
     //update player's floor line
@@ -181,6 +185,7 @@ class Game {
     this.processPlayerBoardsAtEndTurn();
 
     this.fillFactories();
+    this.communityPoolTaken = false;
     this.communityPool = []; //should be empty right now anyway.
   }
 
@@ -224,7 +229,7 @@ class Game {
   }
 
   fillFactories() {
-    for (let i = 0; i < this.factories.length; i++) {
+    for (let i = 0; i < (4 * 2 + 1); i++) {
       if (this.tilePool.length >= 4) {
         this.factories[i] = this.tilePool.slice(0, 4);
         this.tilePool = this.tilePool.slice(4);
@@ -234,7 +239,7 @@ class Game {
         this.refillTilePool();
         i--;
       }
-    };
+    }
   }
 
   getState() {
@@ -265,7 +270,7 @@ class Game {
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
     this.tilePool = pool;
-  };
+  }
 }
 
 module.exports = {

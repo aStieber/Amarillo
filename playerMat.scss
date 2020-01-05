@@ -1,7 +1,26 @@
 .playerMat {
-    border: 2px solid black;
-    padding: 10px;
+	border: 2px solid black;
+	padding: 10px;
 }
+
+.playerMat[isTurn="true"] {
+	background: #808500;
+	animation: pulse 3s infinite;
+}
+@keyframes pulse {
+	0% {
+		background: #444;
+	}
+
+	50% {
+		background: #806c00;
+	}
+
+	100% {
+		background: #444;
+	}
+}
+
 
 #patternLines {
 	border-right: white 1px solid;
