@@ -4,12 +4,11 @@
 }
 
 .playerMat[isTurn="true"] {
-	background: #808500;
 	animation: pulse 3s infinite;
 }
 @keyframes pulse {
 	0% {
-		background: #444;
+		background: #403600;
 	}
 
 	50% {
@@ -17,7 +16,7 @@
 	}
 
 	100% {
-		background: #444;
+		background: #403600;
 	}
 }
 

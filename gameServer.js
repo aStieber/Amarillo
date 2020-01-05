@@ -6,6 +6,12 @@ const $ = require('jquery')(window);
 
 const deepCopyArray = (a) => $.extend(true, (Array.isArray(a) ? [] : {}), a);
 
+
+function getColumnFromRow(rowIndex, tileType, wallOffset=0) {
+  //https://jsfiddle.net/p2ebduqk/2/
+  return (wallOffset + tileType - rowIndex + 5) % 5;
+}
+
 class Player {
   constructor(name, userID, wallOffset=0) {
     this.name = name;
@@ -18,6 +24,34 @@ class Player {
 
     this.clearPatternLines([0, 1, 2, 3, 4]);
     this.initializeWall(wallOffset);
+  }
+
+  processPlayerBoard(wallOffset=0) {
+    //identify completed rows
+    let completedPatternLineIndexes = [];
+    for (let i in this.patternLines) {
+      let hasEmptyCell = false;
+      for (let t in this.patternLines[i]) {
+        if (this.patternLines[i][t] === -1) {
+          hasEmptyCell = true;
+          break;
+        }
+      }
+      if (!hasEmptyCell) completedPatternLineIndexes.push(i);
+    }
+    completedPatternLineIndexes.sort(); //rows must be processed from top to bottom
+    //move to wall
+    for (let i in completedPatternLineIndexes) {
+      let tileType = parseInt(this.patternLines[completedPatternLineIndexes[i]][0]);
+      let rowIndex = parseInt(completedPatternLineIndexes[i]);
+      let columnIndex = getColumnFromRow(rowIndex, tileType, wallOffset);
+
+      this.updateWall(tileType, rowIndex, columnIndex);
+    }
+    console.log('score before floor line: ' + this.score);
+    console.log('floorline: ' + this.floorLine);
+    this.clearFloorLine();
+    console.log('score after: ' + this.score);
   }
 
   clearPatternLines(rowsToClear) {
@@ -48,11 +82,13 @@ class Player {
 
     let hSearchScore = this.recursiveSearch(deepCopyArray(this.wall), rowIndex, columnIndex, 'h');
     let vSearchScore = this.recursiveSearch(deepCopyArray(this.wall), rowIndex, columnIndex, 'v');
+    console.log({name: this.name, hSearchScore, vSearchScore, score: this.score});
     //if either search is exactly 1, only consider the other score. Not my fault, that's the rules.
     this.score += (hSearchScore + vSearchScore);
     if (hSearchScore === 1 || vSearchScore === 1) {
        this.score -= 1; //this way, we don't have to worry about which is 1.
     }
+    console.log('final score: ' + this.score);
   }
 
   clearFloorLine() {
@@ -92,7 +128,7 @@ class Game {
     this.wallOffset = 0;
     this.currentTurn = 0;
     this.roundCount = -1;
-    this.communityPoolTaken=false;
+    this.communityPoolFirstTakeUserID = '';
 
     this.refillTilePool();
   }
@@ -129,9 +165,8 @@ class Game {
         else { newCommunityPool.push(this.communityPool[f]); }
       }
       this.communityPool = newCommunityPool;
-      if (!this.communityPoolTaken) {
-        this.communityPoolTaken = true;
-        console.log("community Pool cherry popped");
+      if (!this.communityPoolFirstTakeUserID) {
+        this.communityPoolFirstTakeUserID = player.userID;
         player.floorLine.push(5);
       }
     }
@@ -180,18 +215,27 @@ class Game {
 
   endTurn() {
     this.roundCount++;
-    this.currentTurn = this.roundCount % this.players.length; //next player starts each round
     //calculate points/updateWalls
     this.processPlayerBoardsAtEndTurn();
 
     if (this.checkForEndOfGame()) {
-      console.log('game ended');
+      console.log('Game ended.');
       this.endGameJson = this.getEndGameObject();
     }
     else {
-      console.log('no completed row');
       this.fillFactories();
-      this.communityPoolTaken = false;
+
+      if (this.communityPoolFirstTakeUserID !== '') {
+        let i = 0;
+        for (; i < this.players.length; i++) {
+          if (this.players[i].userID === this.communityPoolFirstTakeUserID) { //this should always exist
+            break;
+          }
+        }
+        this.currentTurn = i;
+      }
+
+      this.communityPoolFirstTakeUserID = '';
       this.communityPool = []; //should be empty right now anyway.
     }
   }
@@ -212,8 +256,10 @@ class Game {
         let rowCompleted = true;
         let wallLine = player.wall[w];
         for (let e in wallLine) {
-          if (wallLine[e] === -1) { rowCompleted = false; }
-          break;
+          if (wallLine[e] === -1) { 
+            rowCompleted = false;
+            break;
+          }
         }
         if (rowCompleted) {
           return true;
@@ -225,37 +271,11 @@ class Game {
 
   processPlayerBoardsAtEndTurn() {
     this.players.forEach(player => {
-      //identify completed rows
-      let completedPatternLineIndexes = [];
-      for (let i in player.patternLines) {
-        let hasEmptyCell = false;
-        for (let t in player.patternLines[i]) {
-          if (player.patternLines[i][t] === -1) {
-            hasEmptyCell = true;
-            break;
-          }
-        }
-        if (!hasEmptyCell) completedPatternLineIndexes.push(i);
-      }
-      //move to wall
-      for (let i in completedPatternLineIndexes) {
-        let tileType = parseInt(player.patternLines[completedPatternLineIndexes[i]][0]);
-        let rowIndex = parseInt(completedPatternLineIndexes[i]);
-        let columnIndex = this.getColumnFromRow(rowIndex, tileType);
-
-        player.updateWall(tileType, rowIndex, columnIndex);
-        player.clearFloorLine();
-      }
+      player.processPlayerBoard(this.wallOffset);
     });
   }
 
-  getColumnFromRow(rowIndex, tileType) {
-    //https://jsfiddle.net/p2ebduqk/2/
-    return (this.wallOffset + tileType - rowIndex + 5) % 5;
-  }
-
   fillFactories() {
-    console.log(this.tilePool)
     this.factories = [];
     let playerCount = this.players.length;
     for (let i = 0; i < (playerCount * 2 + 1); i++) {
