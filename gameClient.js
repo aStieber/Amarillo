@@ -271,10 +271,6 @@
     socket.emit('debugEndTurn', { room: g_roomID });
   });
 
-  $('#endGame').on('click', () => {
-    onEndGame();
-  });
-
   // Create a new game. Emit newGame event.
   $('#createGame').on('click', () => {
     let name = $('#nameInput').val();
@@ -325,14 +321,12 @@
     });
     g_isClientsTurn = g_gameState.currentTurnUserID === g_userID;
 
-    if (g_isClientsTurn) $('#statusSpan').text(`It's your turn.`); 
-    else $('#statusSpan').text(`It's someone else's turn.`);
-
     updateFactories(data.factories);
     updateCommunityPool(data.communityPool);
     updatePlayerMats(data.players, data.wallOffset);
 
     if (g_isClientsTurn) {
+      document.getElementById('turnAlert').play();
       g_turnStateMachine.beginTurn();
     }
 

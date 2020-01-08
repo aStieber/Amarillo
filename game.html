@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script type="text/javascript" src="http://livejs.com/live.js"></script> <!--autoreload, remove for production-->
+        <!--<script type="text/javascript" src="http://livejs.com/live.js"></script>--> <!--autoreload, remove for production-->
         <title>Amarillo</title>
         <link rel="stylesheet" href="css/main.css">
         <link rel="stylesheet" href="css/playerMat.css">
         <link rel="stylesheet" href="css/tile.css">
         <link rel="stylesheet" href="node_modules/skeleton-css/css/skeleton.css">
     </head>
+    <audio id="turnAlert">
+        <source src="crystalbell.mp3" type="audio/mpeg">
+    </audio>
     <body>
         <div class="container">
-            <button id=endTurn style="display: none"> end turn</button>
-            <button id=endGame style="display: none"> end game</button>
+            <button id=endTurn style="display:none"> end turn</button>
+            <button id=endGame style="display:none"> end game</button>
             <div id="menuButtons">
                 <div id="status">
                     Status: <span id="statusSpan">Not connected</span>

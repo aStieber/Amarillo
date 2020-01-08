@@ -1,5 +1,4 @@
 /* global require, __dirname, process */
-//ngrok http 5000
 const { Game } = require('./gameServer');
 
 const express = require('express');

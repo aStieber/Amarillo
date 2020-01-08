@@ -134,7 +134,7 @@ class Game {
   }
 
   addPlayer(name, userID) {
-    this.players.push(new Player(name, userID));
+    this.players.push(new Player(name.slice(0, 20), userID));
     console.log(`Added player to game ${this.roomName}: ${name} | ${userID}`);
   }
 
@@ -221,7 +221,7 @@ class Game {
 
     if (this.checkForEndOfGame()) {
       console.log('Game ended.');
-      this.endGameJson = this.getEndGameObject();
+      this.endGameObject = this.getEndGameObject();
     }
     else {
       this.fillFactories();
