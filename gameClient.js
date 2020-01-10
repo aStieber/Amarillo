@@ -126,6 +126,7 @@
         console.log('Factory unselected.');
         $('.tile').off('click');
         $('.selectedTile').toggleClass('selectedTile');
+        $('#floorLine .tile.option').attr('type', -1);
         $('.tile.option').toggleClass('option');
         this.onBeginTurn();
       },
