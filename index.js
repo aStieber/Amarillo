@@ -46,7 +46,7 @@ io.on('connection', (socket) => {
   // Connect the Player 2 to the room he requested. Show error if room full.
   socket.on('joinGame', function (data) {
     var room = io.nsps['/'].adapter.rooms[data.room];
-    if (room && gameMap[data.room].roundCount === -1 && room.length < 3) { //room exists and game hasn't started yet and <4 players
+    if (room && gameMap[data.room].roundCount === -1 && room.length <= 3) { //room exists and game hasn't started yet and <4 players
       socket.join(data.room);
       gameMap[data.room].addPlayer(data.name, data.userID);
       io.in(data.room).emit('gameConnected', { name: data.name, room: data.room, userID: data.userID });
