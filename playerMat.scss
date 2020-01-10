@@ -1,6 +1,7 @@
 .playerMat {
 	border: 2px solid black;
 	padding: 10px;
+	margin: 10px;
 }
 
 .playerMat[isTurn="true"] {
@@ -72,4 +73,19 @@
     width: 20%;
     padding-left: 8px;
     margin: 5px;
+}
+
+.playerMat .topLine {
+	display:flex;
+	justify-content: space-between;
+}
+
+.playerTurn {
+	padding: 0px 20px 0px 20px;
+	border: 4px black solid;
+	background: gold;
+	justify-content: center;
+	align-items: center;
+	font-size: 42px;
+	margin-right: 5px;
 }

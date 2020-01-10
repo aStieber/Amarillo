@@ -300,6 +300,7 @@ class Game {
       communityPool: this.communityPool,
       wallOffset: this.wallOffset,
       currentTurnUserID: this.players[this.currentTurn].userID,
+      communityPoolFirstTakeUserID: this.communityPoolFirstTakeUserID,
       endGameObject: (this.endGameObject ? this.endGameObject : false)
     };
   }

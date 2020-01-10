@@ -160,7 +160,7 @@
   function updateCommunityPool(pool) {
     pool.sort();
     $('#communityPool').remove();
-    let newDiv = '<div id="communityPool" class="communityPool factory flex-container" factoryIndex="-1">';
+    let newDiv = `<div id="communityPool" class="communityPool factory flex-container" factoryIndex="-1" grabbed="${g_gameState.communityPoolFirstTakeUserID != ''}">`;
     pool.forEach(tile => {
       newDiv += `<div class="tile placed" type="${tile}" draggable="${g_isClientsTurn.toString()}" factoryIndex="-1"></div>`;
     });
@@ -170,6 +170,7 @@
 
   function updatePlayerMats(players, wallOffset=0) {
     $('.playerMat').remove();
+    let turnOrder = 1;
     players.forEach(player => {
       //order?
 
@@ -208,9 +209,12 @@
       //final product
       var newPlayerMatHTML = `
         <div class="playerMat" user="${player.userID}" isTurn="${g_gameState.currentTurnUserID === player.userID}">
-          <div class="scoreboard">
-            ${player.name}<br/>
-            ${player.score} Points
+          <div class="topLine">
+            <div class="scoreboard">
+              ${player.name}<br/>
+              ${player.score} Points
+            </div>
+            <div class="playerTurn">${turnOrder}</div>
           </div>
           <div id="tileSection">
             <div id="patternLines">
@@ -225,13 +229,13 @@
           </div>
         </div>
       `;
+      turnOrder++;      
       if (g_userID === player.userID) {
         $('.playerMats').prepend(newPlayerMatHTML);
       }
       else {
         $('.opponentMats').append(newPlayerMatHTML);
       }
-
     });    
   }
 

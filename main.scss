@@ -53,6 +53,11 @@ body {
     max-height: 600px;
 }
 
+.communityPool[grabbed="false"] {
+    outline: 4px solid #851821;
+    outline-offset: -6px;
+}
+
 .gameBoard{
     display: flex;
     flex-direction: row;
