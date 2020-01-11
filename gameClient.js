@@ -255,6 +255,14 @@
         $('.opponentMats').append(newPlayerMatHTML);
       }
     });    
+
+    // When we transform-scale down the opponent mats, apply this hack to remove whitespace
+    if (!$('.opponentMatsWrapper').hasClass('transform-hack-applied')) {
+      let width = $('.opponentMats').width();
+      let height = $('.opponentMats').height();
+      $('.opponentMats').width(width).height(height);
+      $('.opponentMatsWrapper').width(width * 0.6).height(height * 0.6).addClass('transform-hack-applied');
+    }
   }
 
   function onEndGame(endGameList) {

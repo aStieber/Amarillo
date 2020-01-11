@@ -48,9 +48,8 @@ body {
     max-width: 35%;
     background: #999;
     display: flex;
-    justify-content: center;
+    align-content: start;
     flex-wrap: wrap;
-    max-height: 600px;
 }
 
 .communityPool[grabbed="false"] {
@@ -62,6 +61,7 @@ body {
     display: flex;
     flex-direction: row;
     justify-content: center;
+    align-items: flex-start;
 }
 
 .center{
