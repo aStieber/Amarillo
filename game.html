@@ -22,6 +22,14 @@
             </div>
             <div>
             <div class="gameBoard" >
+                <div class="chat">
+                    <ul id="messages">
+                        <div class="expander">
+                    </ul>
+                    <form class="textEntry" style="display: none">
+                        <textarea id="chatInput" cols="30" rows="10"></textarea><button>Send</button>
+                    </form>
+                </div>
                 <div id="centerBoard">
                     <div id="factories" class="factories"></div>
                 </div>
@@ -31,14 +39,6 @@
                     <div class="opponentMats">
                     </div>
                 </div>
-            </div>
-            <div class="chat">
-                <ul id="messages">
-                    <div class="expander">
-                </ul>
-                <form class="textEntry" style="display: none">
-                    <textarea id="chatInput" cols="30" rows="10"></textarea><button>Send</button>
-                </form>
             </div>
         </div>
         <script src="node_modules/jquery/dist/jquery.min.js"></script>
