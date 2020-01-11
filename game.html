@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!--<script type="text/javascript" src="http://livejs.com/live.js"></script>--> <!--autoreload, remove for production-->
+        <script type="text/javascript" src="http://livejs.com/live.js"></script> <!--autoreload, remove for production-->
         <title>Amarillo</title>
         <link rel="stylesheet" href="css/main.css">
         <link rel="stylesheet" href="css/playerMat.css">
         <link rel="stylesheet" href="css/tile.css">
+        <link rel="stylesheet" href="css/chat.css">
         <link rel="stylesheet" href="node_modules/skeleton-css/css/skeleton.css">
     </head>
     <audio id="turnAlert">
@@ -13,25 +14,29 @@
     </audio>
     <body>
         <div class="container">
-            <button id=endTurn style="display:none"> end turn</button>
-            <button id=endGame style="display:none"> end game</button>
             <div id="menuButtons">
-                <div id="status">
-                    Status: <span id="statusSpan">Not connected</span>
-                </div>
-                <button id="joinGame" class="menuButton" style="color:white;">Join Game</button>
+                <button id="joinGame" class="menuButton" style="color:white;">Join / Reconnect</button>
                 <button id="createGame" class="menuButton" style="color: white;">Create Game</button>
                 <button id="startGame" class="menuButton" style="color: #2E2;display:none;">Start Game</button>
                 <input type="text" placeholder="Your Name" id="nameInput">                
             </div>
+            <div>
             <div class="gameBoard" >
                 <div id="centerBoard">
                     <div id="factories" class="factories"></div>
                 </div>
                 <div class="playerMats disable-selection" >
                 </div>
-                <div class="opponentMats">
-                </div>
+            </div>
+            <div class="opponentMats">
+            </div>
+            <div class="chat">
+                <ul id="messages">
+                    <div class="expander">
+                </ul>
+                <form class="textEntry" style="display: none">
+                    <textarea id="chatInput" cols="30" rows="10"></textarea><button>Send</button>
+                </form>
             </div>
         </div>
         <script src="node_modules/jquery/dist/jquery.min.js"></script>

@@ -304,8 +304,7 @@
   socket.on('gameConnected', (data) => {
     console.log('gameConnected'+  data);
     g_roomID = data.room;
-    const message = `${data.userID === g_userID ? 'You' : 'Someone'} connected to ${data.room} as ${data.name}.`;
-    $('#statusSpan').text(message);
+    applyChatlog(data.chatlog);
     $('#nameInput').hide();
     $('#createGame').hide();
     $('#joinGame').hide();
@@ -315,6 +314,7 @@
   socket.on('gameUpdate', (data) => {
     g_gameState = data;
     $('#menuButtons').hide();
+    $('.textEntry').show();
     if (data.endGameObject) {
       onEndGame(data.endGameObject);
     }
@@ -336,4 +336,47 @@
     }
 
   });
+
+  function applyChatlog(chatlog) {
+    $('#messages li').remove();
+    for (let m in chatlog) {
+      addChatMessage(chatlog[m].senderName, chatlog[m].message);
+    }
+  }
+
+  function addChatMessage(senderName, message) {
+    if (senderName === '') {
+      $('#messages').append($('<li>').text(`${message}`).addClass('serverMessage'));
+    }
+    else {
+      $('#messages').append($('<li>').text(
+        `${senderName}: ${message}`
+      ));
+    }
+  } 
+
+  socket.on('chatUpdate', (data) => {
+    addChatMessage(data.senderName, data.message);    
+  });
+
+  function emitMessage(msg) {
+    if (msg.length > 0) {
+      socket.emit('msgSent', {room: g_roomID, message: msg.slice(0, 150), senderName: g_clientPlayer.name});
+      $('#chatInput').val('');
+    }
+  }
+
+  $('.textEntry').submit(function(e){
+    e.preventDefault(); // prevents page reloading
+    emitMessage($('#chatInput').val());
+    return false;
+  });
+
+  $('#chatInput').keydown(function() {
+    if (event.keyCode == 13) { //enter
+      emitMessage($('#chatInput').val());
+    }
+  });
+
+
 }());

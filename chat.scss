@@ -1,0 +1,60 @@
+#messages { 
+	list-style-type: none;
+	background: white;
+	border: 1px black solid;
+	height: 400px;
+	display:flex;
+	flex-direction: column;
+	align-items:flex;
+	overflow-y: scroll;
+}
+#messages li { 
+	padding-left: 10px;
+	margin-top: 1px;
+	margin-bottom: 0px;
+	word-wrap: break-word;
+
+}
+#messages li:nth-child(odd) { 
+	background: #eee;
+}
+#messages li:nth-child(even) { 
+	background: #bbb;
+}
+
+#messages li.serverMessage { 
+	background: #ba52ff;
+}
+
+.chat .textEntry {
+	margin: 0px;
+}
+
+.textEntry textarea { 
+	border: 0;
+	margin-right: .5%;
+	min-width: 86%;
+	max-width: 86%;
+	margin-bottom: 0px;
+	margin-top: 0px;
+}
+
+.textEntry button {
+	position:absolute;
+	font-size: 10px;
+	padding: 0px;
+	background: #27F;
+	color: white;
+}
+
+.chat {
+	width: 30%;
+	border: 2px solid black;
+	background: #222;
+	padding: 10px;
+	padding-bottom: 0px;
+}
+
+.expander {
+	height: 100%;
+}
