@@ -68,7 +68,7 @@ io.on('connection', (socket) => {
       }
       if (playerAlreadyInGame) {
         io.in(data.room).emit('gameConnected', { name: data.name, room: data.room, userID: data.userID, chatlog: chatlogMap[data.room] });
-        let msgObject = {senderName: '', message: `${data.nam} has reconnected to room '${room}'.`};
+        let msgObject = {senderName: '', message: `${data.name} has reconnected to room '${data.room}'.`};
         chatlogMap[data.room].push(msgObject);
         emitMessage(data.room, msgObject.message, msgObject.senderName);
         if (hasGameStarted) { 
