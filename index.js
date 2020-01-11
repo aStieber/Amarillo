@@ -41,6 +41,10 @@ io.on('connection', (socket) => {
   // Create a new game room and notify the creator of game.
   socket.on('createGame', (data) => {
     let roomName = `r${++rooms}`;
+    // In development, allow clients to choose room name
+    if (process.env.NODE_ENV !== 'production' && data.room) {
+      roomName = data.room;
+    }
     socket.join(roomName);
     gameMap[roomName] = new Game(roomName);
     gameMap[roomName].addPlayer(data.name, data.userID);
@@ -59,13 +63,8 @@ io.on('connection', (socket) => {
       socket.join(data.room);
       let hasGameStarted = gameMap[data.room].roundCount > -1;
       //check if player is already in game
-      let playerAlreadyInGame = false;
-      for (let playerIndex in gameMap[data.room].players) {
-        if (gameMap[data.room].players[playerIndex].userID === data.userID) {
-          playerAlreadyInGame = true;
-          break;
-        }
-      }
+      let playerAlreadyInGame = gameMap[data.room].players.some(p => p.userID === data.userID);
+
       if (playerAlreadyInGame) {
         io.in(data.room).emit('gameConnected', { name: data.name, room: data.room, userID: data.userID, chatlog: chatlogMap[data.room] });
         let msgObject = {senderName: '', message: `${data.name} has reconnected to room '${data.room}'.`};

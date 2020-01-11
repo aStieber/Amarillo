@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script type="text/javascript" src="http://livejs.com/live.js"></script> <!--autoreload, remove for production-->
+        <!--<script type="text/javascript" src="http://livejs.com/live.js"></script>--> <!--autoreload, remove for production-->
         <title>Amarillo</title>
+        <link rel="stylesheet" href="node_modules/skeleton-css/css/skeleton.css">
         <link rel="stylesheet" href="css/main.css">
         <link rel="stylesheet" href="css/playerMat.css">
         <link rel="stylesheet" href="css/tile.css">
         <link rel="stylesheet" href="css/chat.css">
-        <link rel="stylesheet" href="node_modules/skeleton-css/css/skeleton.css">
     </head>
     <audio id="turnAlert">
         <source src="crystalbell.mp3" type="audio/mpeg">
@@ -27,8 +27,10 @@
                 </div>
                 <div class="playerMats disable-selection" >
                 </div>
-            </div>
-            <div class="opponentMats">
+                <div class="opponentMatsWrapper">
+                    <div class="opponentMats">
+                    </div>
+                </div>
             </div>
             <div class="chat">
                 <ul id="messages">

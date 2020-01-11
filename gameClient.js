@@ -7,13 +7,31 @@
   let g_roomID;
   let g_userID;
 
+  // use query params as dev flags
+  let params = new URLSearchParams(document.location.search);
+  let devEnabled = params.get('dev') !== "0" && !!params.get('dev');
+  let devRoomID = params.get('roomID');
+  let devUserID = params.get('userID');
+  let devIsHost = params.get('isHost');
+
   // const socket = io.connect('http://tic-tac-toe-realtime.herokuapp.com'),
   const socket = io.connect();
   //generate random ID number for this browser and store it in a cookie.
   if (!Cookies.get('ID')) {
     Cookies.set('ID', Math.random().toString(36).substr(2, 9), {expires: 1000, path: ''}); 
   }
-  g_userID = Cookies.get('ID');
+  g_userID = (devEnabled && devUserID) || Cookies.get('ID');
+
+  if (devEnabled && devRoomID && devUserID) {
+    let name = 'p' + devUserID;
+    socket.on('connect', () => {
+      if (devIsHost) {
+        socket.emit('createGame', { name, room: devRoomID, userID: g_userID });
+      } else {
+        socket.emit('joinGame', { name, room: devRoomID, userID: g_userID});
+      }
+    });
+  }
 
   let g_turnStateMachine = new StateMachine({
     init: 'idle',
@@ -237,6 +255,14 @@
         $('.opponentMats').append(newPlayerMatHTML);
       }
     });    
+
+    // When we transform-scale down the opponent mats, apply this hack to remove whitespace
+    if (!$('.opponentMatsWrapper').hasClass('transform-hack-applied')) {
+      let width = $('.opponentMats').width();
+      let height = $('.opponentMats').height();
+      $('.opponentMats').width(width).height(height);
+      $('.opponentMatsWrapper').width(width * 0.6).height(height * 0.6).addClass('transform-hack-applied');
+    }
   }
 
   function onEndGame(endGameList) {
