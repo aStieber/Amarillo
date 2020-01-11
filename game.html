@@ -7,30 +7,34 @@
         <link rel="stylesheet" href="css/main.css">
         <link rel="stylesheet" href="css/playerMat.css">
         <link rel="stylesheet" href="css/tile.css">
+        <link rel="stylesheet" href="css/chat.css">
     </head>
     <audio id="turnAlert">
         <source src="crystalbell.mp3" type="audio/mpeg">
     </audio>
     <body>
         <div class="container">
-            <button id=endTurn style="display:none"> end turn</button>
-            <button id=endGame style="display:none"> end game</button>
             <div id="menuButtons">
-                <div id="status">
-                    Status: <span id="statusSpan">Not connected</span>
-                </div>
-                <button id="joinGame" class="menuButton" style="color:white;">Join Game</button>
+                <button id="joinGame" class="menuButton" style="color:white;">Join / Reconnect</button>
                 <button id="createGame" class="menuButton" style="color: white;">Create Game</button>
                 <button id="startGame" class="menuButton" style="color: #2E2;display:none;">Start Game</button>
                 <input type="text" placeholder="Your Name" id="nameInput">                
             </div>
+            <div>
             <div class="gameBoard" >
+                <div class="chat">
+                    <ul id="messages">
+                        <div class="expander">
+                    </ul>
+                    <form class="textEntry" style="display: none">
+                        <textarea id="chatInput" cols="30" rows="10"></textarea><button>Send</button>
+                    </form>
+                </div>
                 <div id="centerBoard">
                     <div id="factories" class="factories"></div>
                 </div>
                 <div class="playerMats disable-selection" >
                 </div>
-
                 <div class="opponentMatsWrapper">
                     <div class="opponentMats">
                     </div>
