@@ -37,6 +37,10 @@ io.on('connection', (socket) => {
   // Create a new game room and notify the creator of game.
   socket.on('createGame', (data) => {
     let roomName = `r${++rooms}`;
+    // In development, allow clients to choose room name
+    if (process.env.NODE_ENV !== 'production' && data.room) {
+      roomName = data.room;
+    }
     socket.join(roomName);
     gameMap[roomName] = new Game(roomName);
     gameMap[roomName].addPlayer(data.name, data.userID);
