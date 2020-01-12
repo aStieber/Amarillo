@@ -95,10 +95,20 @@
           });
 
           //additionally, select the appropriate amount of floor lines (always an option)
-          $(`.playerMat[user=${g_userID}] #floorLine .tile[type="-1"]`)
+          //if the floorline is full, make trash can available
+          if ($(`.playerMat[user=${g_userID}] #floorLine .tile[type="-1"]`).length === 0) {
+            $(`.playerMat[user=${g_userID}] #floorLineTrashCan`)
+              .attr('type', tileType)
+              .toggleClass('option')
+              .show();
+          }
+          else {
+            $(`.playerMat[user=${g_userID}] #floorLine .tile[type="-1"]`)
               .slice(0, selectedTiles.length)
               .attr('type', tileType)
               .toggleClass('option');
+          }
+
 
           g_turnStateMachine.factorySelect();
         }); 
@@ -112,12 +122,17 @@
         $('.option').on('click', element => {
           $('.tile').off('click');
 
-          let tileType = $(element.target).attr('type');
+          let tileType = $('.selectedTile').attr('type');
           let patternLineIndex = 0;
           let selectedCount = 0;
           let highlightedCount = 0;
           //handle floor line a lil differently
-          if ($(element.target).parent().attr('id') === 'floorLine') {
+          let isTrashCan = $(element.target).attr('id') === 'floorLineTrashCan' || $(element.target).attr('id') === 'tcText';
+          if (isTrashCan) {
+            patternLineIndex = -1;
+            selectedCount = 1; //just needs to be > 0
+          }
+          else if ($(element.target).parent().attr('id') === 'floorLine') {
             console.log('Floor line selected.');
             patternLineIndex = -1;
             selectedCount = $(`#floorLine .option`).length;
@@ -128,7 +143,6 @@
             patternLineIndex = $(element.target.parentElement).attr('patternlineindex');
             highlightedCount = $(`.patternLine[patternlineindex=${patternLineIndex}] .option`).length;
           }
-
 
           socket.emit('clientMove', { 
             factoryIndex: $('.selectedTile:first').attr('factoryindex'),
@@ -145,6 +159,7 @@
         $('.tile').off('click');
         $('.selectedTile').toggleClass('selectedTile');
         $('#floorLine .tile.option').attr('type', -1);
+        $('#floorLineTrashCan').attr('type', -1).hide();
         $('.tile.option').toggleClass('option');
         this.onBeginTurn();
       },
@@ -242,8 +257,13 @@
               ${wallHTML}
             </div>
           </div>
-          <div id="floorLine">
-            ${floorLineHTML}
+          <div id="floorContainer">
+            <div id="floorLine">
+              ${floorLineHTML}
+            </div>
+            <div id="floorLineTrashCan" class="tile" type="-1">
+              <div id="tcText">&#x1F5D1</div>
+            </div>
           </div>
         </div>
       `;
@@ -274,9 +294,9 @@
         <tr>
           <th>Name</th>
           <th>Ending Score</th>
-          <th>Rows Completed</th>
-          <th>Columns Completed</th>
-          <th>Colors Completed</th>
+          <th>Rows Completed (x2)</th>
+          <th>Columns Completed (x7)</th>
+          <th>Colors Completed (x10)</th>
           <th>Final Score</th>
         </tr>
     `; 

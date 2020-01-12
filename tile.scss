@@ -29,6 +29,9 @@ $tileColors: #7300de, #ffbf00, #ff1e00, #18a100, #0085de;
             &.option {
                 border: 2px dotted $c;
             }
+            & #tcText {
+                color: $c;
+            }
         }
     }
 }
