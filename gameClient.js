@@ -95,10 +95,16 @@
           });
 
           //additionally, select the appropriate amount of floor lines (always an option)
-          $(`.playerMat[user=${g_userID}] #floorLine .tile[type="-1"]`)
+          let $availableFloorLineSpaces = $(`.playerMat[user=${g_userID}] #floorLine .tile[type="-1"]`);
+          if ($availableFloorLineSpaces.length) {
+            $availableFloorLineSpaces
               .slice(0, selectedTiles.length)
               .attr('type', tileType)
               .toggleClass('option');
+          } else {
+            // If the floor line is full, the player can still dump tiles there.
+            $(`.playerMat[user=${g_userID}] #floorLine .tile`).toggleClass('option');
+          }
 
           g_turnStateMachine.factorySelect();
         }); 
@@ -112,7 +118,7 @@
         $('.option').on('click', element => {
           $('.tile').off('click');
 
-          let tileType = $(element.target).attr('type');
+          let tileType = $('.selectedTile').attr('type');
           let patternLineIndex = 0;
           let selectedCount = 0;
           let highlightedCount = 0;
@@ -120,7 +126,7 @@
           if ($(element.target).parent().attr('id') === 'floorLine') {
             console.log('Floor line selected.');
             patternLineIndex = -1;
-            selectedCount = $(`#floorLine .option`).length;
+            selectedCount = $('#floorLine .option:not(.placed)').length;
           }
           else { //regular pattern line
             console.log('Pattern line selected.');
@@ -144,7 +150,7 @@
         console.log('Factory unselected.');
         $('.tile').off('click');
         $('.selectedTile').toggleClass('selectedTile');
-        $('#floorLine .tile.option').attr('type', -1);
+        $('#floorLine .tile.option:not(.placed)').attr('type', -1);
         $('.tile.option').toggleClass('option');
         this.onBeginTurn();
       },
