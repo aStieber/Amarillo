@@ -418,6 +418,7 @@
         `${senderName}: ${message}`
       ));
     }
+    $('#messages').scrollTop($('#messages')[0].scrollHeight - $('#messages')[0].clientHeight);
   } 
 
   socket.on('chatUpdate', (data) => {
@@ -442,6 +443,5 @@
       emitMessage($('#chatInput').val());
     }
   });
-
 
 }());
