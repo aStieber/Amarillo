@@ -22,7 +22,11 @@
 	background: #bbb;
 }
 
-#messages li.serverMessage { 
+#messages li.serverMessage:nth-child(odd) { 
+	background: #d08aff;
+}
+
+#messages li.serverMessage:nth-child(even) { 
 	background: #ba52ff;
 }
 
