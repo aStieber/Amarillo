@@ -90,17 +90,22 @@
 	margin-right: 5px;
 }
 
-#floorLineTrashCan {
-	display: none;
+#floorContainer {
 	position: relative;
-	bottom: 78px;
+}
+
+#floorLineTrashCan {
+	&:not(.hidden) {
+		display: flex;
+	}
+	display: none;
+	position: absolute;
+	top: 2px;
 	left: 32px;
-	margin-bottom: -66px;
+	justify-content: center;
 }
 
 #tcText {
-	font-size: 72px;
-	position: relative;
-	bottom: 40px;
-	right: 6px;
+	font-size: 64px;
+	line-height: 66px;
 }
