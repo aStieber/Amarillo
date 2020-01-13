@@ -44,3 +44,15 @@ $tileColors: #7300de, #ffbf00, #ff1e00, #18a100, #0085de;
 .selectedTile {
     filter: opacity(50%);
 }
+
+
+.messageTile {
+    @for $i from 1 through length($tileColors) {
+        $c: nth($tileColors, $i);
+
+        &[type="#{$i - 1}"] {
+            color: $c;
+            background: $c;
+        }
+    }
+}

@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 });
 
 function getConnectionMessage(name, room) {
-  return `${name} connected to room '${room}'.`;
+  return `${name.slice(0, 20).replace(/\W/g, '')} connected to room '${room}'.`;
 }
 
 let gameMap = {};
@@ -94,7 +94,11 @@ io.on('connection', (socket) => {
 
   socket.on('clientMove', (data) => {
     console.log('Received client move.');
-    gameMap[data.room].onClientMove(data);
+    let turnMessage = gameMap[data.room].onClientMove(data);
+
+    let msgObject = {senderName: '', message: turnMessage};
+    chatlogMap[data.room].push(msgObject);
+    emitMessage(data.room, msgObject.message, msgObject.senderName);
     io.in(data.room).emit('gameUpdate', gameMap[data.room].getState());
   });
 

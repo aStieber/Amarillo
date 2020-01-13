@@ -134,12 +134,12 @@ class Game {
   }
 
   addPlayer(name, userID) {
-    this.players.push(new Player(name.slice(0, 20), userID));
+    this.players.push(new Player(name.slice(0, 20).replace(/\W/g, ''), userID));
     console.log(`Added player to game ${this.roomName}: ${name} | ${userID}`);
   }
 
   onClientMove(data) {
-    let factoryIndex = data.factoryIndex;
+    let factoryIndex = parseInt(data.factoryIndex);
     let tileType = data.tileType;
     let targetRow = data.targetRow;
     let userID = data.userID;
@@ -154,6 +154,7 @@ class Game {
       }
     }
 
+    let moveMessage = '';
     //Move tiles to pool, count selectedTiles
     if (factoryIndex == -1) //from the communityPool
     {
@@ -169,15 +170,21 @@ class Game {
         this.communityPoolFirstTakeUserID = player.userID;
         player.floorLine.push(5);
       }
+      moveMessage = `${player.name.slice(0, 8)} <- Pool | [${tileType.toString().repeat(selectedTileCount)}]`;
     }
     else {
+      let toPoolTiles = [];
       for (let f = 0; f < 4; f++) {
         if (this.factories[factoryIndex][f] == tileType) {
           selectedTileCount++;
         }
-        else { this.communityPool.push(this.factories[factoryIndex][f]); }
+        else { 
+          this.communityPool.push(this.factories[factoryIndex][f]); 
+          toPoolTiles.push(this.factories[factoryIndex][f]);
+        }
       }
       this.factories[factoryIndex] = [];
+      moveMessage = `${player.name.slice(0, 8)} <- Factory ${factoryIndex + 1} | [${tileType.toString().repeat(selectedTileCount)}]${toPoolTiles.join('')}`;
     }
 
     //update player's floor line
@@ -212,6 +219,7 @@ class Game {
     else {
       this.endTurn();
     }
+    return moveMessage;
   }
 
   endTurn() {

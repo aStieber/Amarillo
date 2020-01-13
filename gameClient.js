@@ -392,7 +392,26 @@
 
   function addChatMessage(senderName, message) {
     if (senderName === '') {
-      $('#messages').append($('<li>').text(`${message}`).addClass('serverMessage'));
+      //| [4]003
+      //| [12351231245]
+      let re = /\| \[\d+\]\d*/;
+      let found = message.match(re);
+      if (found) {
+        let match = found[0];
+        let prefix = message.substring(0, found.index);
+        let suffix = '';
+        [...match].forEach(c => {
+          if (c.match(/\d{1}/)) {
+            suffix += ` <span class="messageTile" type="${c}">0</span>`;
+          }
+          else {
+            suffix += c;
+          }
+        });
+
+        message = (prefix + suffix);
+      }
+      $('#messages').append($('<li>').html(`${message}`).addClass('serverMessage'));
     }
     else {
       $('#messages').append($('<li>').text(
