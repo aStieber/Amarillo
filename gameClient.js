@@ -100,7 +100,7 @@
             $(`.playerMat[user=${g_userID}] #floorLineTrashCan`)
               .attr('type', tileType)
               .toggleClass('option')
-              .show();
+              .removeClass('hidden');
           }
           else {
             $(`.playerMat[user=${g_userID}] #floorLine .tile[type="-1"]`)
@@ -159,7 +159,7 @@
         $('.tile').off('click');
         $('.selectedTile').toggleClass('selectedTile');
         $('#floorLine .tile.option').attr('type', -1);
-        $('#floorLineTrashCan').attr('type', -1).hide();
+        $('#floorLineTrashCan').attr('type', -1).addClass('hidden');
         $('.tile.option').toggleClass('option');
         this.onBeginTurn();
       },
@@ -261,7 +261,7 @@
             <div id="floorLine">
               ${floorLineHTML}
             </div>
-            <div id="floorLineTrashCan" class="tile" type="-1">
+            <div id="floorLineTrashCan" class="tile hidden" type="-1">
               <div id="tcText">&#x1F5D1</div>
             </div>
           </div>

@@ -2,13 +2,11 @@ $tileColors: #7300de, #ffbf00, #ff1e00, #18a100, #0085de;
 //#fcfc03, #77fc03, #fc03f0, #03fcf4, #a103fc;
 
 .tile {
-    max-height: 32px;
-    min-height: 32px;
-    max-width: 32px;
-    min-width: 32px;
+    box-sizing: border-box;
+    width: 66px;
+    height: 66px;
     border: 2px solid black;
     border-radius: 5px;
-    padding: 15px;
     margin: 5px;
     background: #444;
     transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
