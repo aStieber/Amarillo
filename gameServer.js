@@ -170,7 +170,7 @@ class Game {
         this.communityPoolFirstTakeUserID = player.userID;
         player.floorLine.push(5);
       }
-      moveMessage = `${player.name.slice(0, 8)} <- Pool | [${tileType.toString().repeat(selectedTileCount)}]`;
+      moveMessage = `${player.name.slice(0, 8)}<Pool | [${tileType.toString().repeat(selectedTileCount)}]`;
     }
     else {
       let toPoolTiles = [];
@@ -184,7 +184,7 @@ class Game {
         }
       }
       this.factories[factoryIndex] = [];
-      moveMessage = `${player.name.slice(0, 8)} <- Factory ${factoryIndex + 1} | [${tileType.toString().repeat(selectedTileCount)}]${toPoolTiles.join('')}`;
+      moveMessage = `${player.name.slice(0, 8)}<Factory ${factoryIndex + 1} | [${tileType.toString().repeat(selectedTileCount)}]${toPoolTiles.join('')}`;
     }
 
     //update player's floor line
