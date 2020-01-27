@@ -135,6 +135,16 @@ class Game {
 
   addPlayer(name, userID) {
     this.players.push(new Player(name.slice(0, 20).replace(/\W/g, ''), userID));
+
+    let playerCount = this.players.length;
+    for (let i = 0; i < playerCount; i++) {
+      let index1 = (Math.random() * playerCount) | 0;
+      let index2 = (Math.random() * playerCount) | 0;
+
+      let temp_val = this.players[index1];
+      this.players[index1] = this.players[index2];
+      this.players[index2] = temp_val;
+    }
     console.log(`Added player to game ${this.roomName}: ${name} | ${userID}`);
   }
 
