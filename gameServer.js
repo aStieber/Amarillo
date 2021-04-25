@@ -52,19 +52,21 @@ class Player {
       let columnIndex = 0;
 
       let found = false;
-      editedPlayer.wall[rowIndex].forEach(row => {
-        if (row[columnIndex] == tileType) {
+      for (const cellValue of editedPlayer.wall[rowIndex]) {
+        if (parseInt(cellValue) === tileType) {
           found = true;
-          return false;
+          break;
         }
-        i++;
-      });
-
+        columnIndex++;
+      }
       if (found) {
         this.updateWall(tileType, rowIndex, columnIndex);
       }
       else {
         console.log("failed to find tile in row.");
+        console.log(tileType);
+        console.log(rowIndex);
+        console.dir(editedPlayer.wall);
       }
     }
     console.log('score before floor line: ' + this.score);
@@ -352,6 +354,9 @@ class Game {
         break;
       }
     } 
+    if (this.wallPushPhase.length === 0) {
+      this.endTurn();
+    }
   }
 
   processPlayerBoardsAtEndTurn() {

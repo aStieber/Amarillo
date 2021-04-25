@@ -412,7 +412,7 @@
       $('.playerMat').remove();
     }
     else {
-      $('.opponentMats').remove();
+      $('.opponentMats .playerMat').remove();
     }
     let turnOrder = 1;
     players.forEach(player => {
