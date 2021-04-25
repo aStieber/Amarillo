@@ -10,31 +10,9 @@
   if (document.cookie) {
     console.log(document.cookie["ID"]);
   }
-  console.dir();
   var d = new Date();
   d.setTime(d.getTime() + (1000*24*60*60*1000));
-  console.log(`ID=${"arst"};expires=${d.toUTCString()};path=/`);
   document.cookie = `ID=${"arst"};expires=${d.toUTCString()};path=/`;
-
-
-  $('#doStuff').on('click', () => {
-    $('#mat').load("playerMat.html");
-    game = new Game("arst");//new Game(data.room);
-    game.displayBoard();
-  });
-
-  $('#setTiles').on('click', () => {
-    let i =0;
-    //iterate through wall, build colors
-    $('#playerWall').children().each(function (){
-      $(this).children().each(function (){
-        $(this).attr("type", i % 5);
-        i++;
-      });
-      i++;
-    });
-  });
-
   // Create a new game. Emit newGame event.
   $('#createGame').on('click', () => {
     name = $('#nameInput').val();
@@ -69,54 +47,5 @@
     $('#nameInput').hide();
     $('#createGame').hide();
     $('#startGame').show();
-  });
-
-  /**
-	 * If player creates the game, he'll be P1(X) and has the first turn.
-	 * This event is received when opponent connects to the room.
-	 */
-  socket.on('player1', (data) => {
-    const message = `Hello, ${player.getPlayerName()}`;
-    $('#userHello').html(message);
-    player.setCurrentTurn(true);
-  });
-
-  /**
-	 * Joined the game, so player is P2(O). 
-	 * This event is received when P2 successfully joins the game room. 
-	 */
-  socket.on('player2', (data) => {
-    const message = `Hello, ${data.name}`;
-
-    // Create game for player 2
-    game = new Game(data.room);
-    game.displayBoard(message);
-    player.setCurrentTurn(false);
-  });
-
-  /**
-	 * Opponent played his turn. Update UI.
-	 * Allow the current player to play now. 
-	 */
-  socket.on('turnPlayed', (data) => {
-    const row = data.tile.split('_')[1][0];
-    const col = data.tile.split('_')[1][1];
-    const opponentType = player.getPlayerType() === P1 ? P2 : P1;
-
-    game.updateBoard(opponentType, row, col, data.tile);
-    player.setCurrentTurn(true);
-  });
-
-  // If the other player wins, this event is received. Notify user game has ended.
-  socket.on('gameEnd', (data) => {
-    game.endGame(data.message);
-    socket.leave(data.room);
-  });
-
-  /**
-	 * End the game on any err event. 
-	 */
-  socket.on('err', (data) => {
-    game.endGame(data.message);
   });
 }());

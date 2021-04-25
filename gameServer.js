@@ -27,19 +27,7 @@ class Player {
   }
 
   processPlayerBoard(wallOffset=0) {
-    //identify completed rows
-    let completedPatternLineIndexes = [];
-    for (let i in this.patternLines) {
-      let hasEmptyCell = false;
-      for (let t in this.patternLines[i]) {
-        if (this.patternLines[i][t] === -1) {
-          hasEmptyCell = true;
-          break;
-        }
-      }
-      if (!hasEmptyCell) completedPatternLineIndexes.push(i);
-    }
-    completedPatternLineIndexes.sort(); //rows must be processed from top to bottom
+    let completedPatternLineIndexes = this.identifyCompletedRows();
     //move to wall
     for (let i in completedPatternLineIndexes) {
       let tileType = parseInt(this.patternLines[completedPatternLineIndexes[i]][0]);
@@ -52,6 +40,55 @@ class Player {
     console.log('floorline: ' + this.floorLine);
     this.clearFloorLine();
     console.log('score after: ' + this.score);
+  }
+
+  processPlayerBoardPush(editedPlayer) {
+    let completedPatternLineIndexes = this.identifyCompletedRows();
+
+    //move to wall
+    for (let i in completedPatternLineIndexes) {
+      let tileType = parseInt(this.patternLines[completedPatternLineIndexes[i]][0]);
+      let rowIndex = parseInt(completedPatternLineIndexes[i]);
+      let columnIndex = 0;
+
+      let found = false;
+      editedPlayer.wall[rowIndex].forEach(row => {
+        if (row[columnIndex] == tileType) {
+          found = true;
+          return false;
+        }
+        i++;
+      });
+
+      if (found) {
+        this.updateWall(tileType, rowIndex, columnIndex);
+      }
+      else {
+        console.log("failed to find tile in row.");
+      }
+    }
+    console.log('score before floor line: ' + this.score);
+    this.floorLine = editedPlayer.floorLine;
+    console.log('floorline: ' + this.floorLine);
+    this.clearFloorLine();
+    console.log('score after: ' + this.score);
+  }
+
+
+  identifyCompletedRows() {
+    let completedPatternLineIndexes = [];
+    for (let i in this.patternLines) {
+      let hasEmptyCell = false;
+      for (let t in this.patternLines[i]) {
+        if (this.patternLines[i][t] === -1) {
+          hasEmptyCell = true;
+          break;
+        }
+      }
+      if (!hasEmptyCell) completedPatternLineIndexes.push(i);
+    }
+    completedPatternLineIndexes.sort(); //rows must be processed from top to bottom
+    return completedPatternLineIndexes;
   }
 
   clearPatternLines(rowsToClear) {
@@ -129,6 +166,8 @@ class Game {
     this.currentTurn = 0;
     this.roundCount = -1;
     this.communityPoolFirstTakeUserID = '';
+    this.isFreeColor = false;
+    this.wallPushPhase = [];
 
     this.refillTilePool();
   }
@@ -227,7 +266,16 @@ class Game {
       this.currentTurn = (this.currentTurn + 1) % this.players.length;
     }
     else {
-      this.endTurn();
+      if (this.isFreeColor) {
+        let playerIDs = [];
+        this.players.forEach(value => {
+          playerIDs.push(value.userID);
+        });
+        this.wallPushPhase = playerIDs;
+      }
+      else {
+        this.endTurn();
+      }
     }
     return moveMessage;
   }
@@ -288,6 +336,24 @@ class Game {
     return false;
   }
 
+  onPushUpdate(editedPlayer) {
+    let i;
+    for (i = 0; i < this.players.length; i++) {
+      if (this.players[i].userID === editedPlayer.userID) {
+        //remove player from wallPushPhase
+        const index = this.wallPushPhase.findIndex(item => {
+          return item === editedPlayer.userID;
+        });
+        if (index > -1) {
+          this.wallPushPhase.splice(index, 1);
+        }
+        //process player's change
+        this.players[i].processPlayerBoardPush(editedPlayer);
+        break;
+      }
+    } 
+  }
+
   processPlayerBoardsAtEndTurn() {
     this.players.forEach(player => {
       player.processPlayerBoard(this.wallOffset);
@@ -319,9 +385,16 @@ class Game {
       wallOffset: this.wallOffset,
       currentTurnUserID: this.players[this.currentTurn].userID,
       communityPoolFirstTakeUserID: this.communityPoolFirstTakeUserID,
-      endGameObject: (this.endGameObject ? this.endGameObject : false)
+      endGameObject: (this.endGameObject ? this.endGameObject : false),
+      isFreeColor: this.isFreeColor,
+      wallPushPhase: this.wallPushPhase
     };
   }
+
+  init(isFreeColor) {
+    this.isFreeColor = isFreeColor;
+  }
+
 
   refillTilePool() {
     function getRandomInt(min, max) {
@@ -394,6 +467,8 @@ class Game {
     return playerEndStates;
   }
 }
+
+
 
 module.exports = {
   Game,

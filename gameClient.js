@@ -14,7 +14,6 @@
   let devUserID = params.get('userID');
   let devIsHost = params.get('isHost');
 
-  // const socket = io.connect('http://tic-tac-toe-realtime.herokuapp.com'),
   const socket = io.connect();
   //generate random ID number for this browser and store it in a cookie.
   if (!Cookies.get('ID')) {
@@ -94,6 +93,7 @@
               .toggleClass('option');
           });
 
+
           //additionally, select the appropriate amount of floor lines (always an option)
           //if the floorline is full, make trash can available
           if ($(`.playerMat[user=${g_userID}] #floorLine .tile[type="-1"]`).length === 0) {
@@ -169,7 +169,158 @@
       }
     }
   });
+  
+  let g_editedPlayer; 
+  let g_wallStateMachine = new StateMachine({
+    init: 'idle',
+    transitions: [
+      { name: 'pushStep', from: '*',  to: 'plSelect' },
+      { name: 'reset', from: '*', to: 'idle'}
+    ],
+    methods: {
+      onPushStep: function() {
+        console.log("pushStep");
+        let fullRowExists = false;
+        //starting at top level, user needs to select a column for each completed row.
+        $(`.playerMat[user=${g_userID}] #patternLines .patternLine`).each(function(index, line) {
+          let lineFilled = true;
+          let tileType = -1;
+          $(line).find('.tile').each(function(index, tile) {
+            if ($(tile).attr('type') == -1) {
+              lineFilled = false;
+              return true;
+            }
+            else tileType = $(tile).attr('type');
+          });
 
+          if (!lineFilled) {
+            return true;
+          }
+          else {
+            fullRowExists = true;
+          }
+
+          if (tileType >= 0) {
+            $(line).find('.tile').each(function(index, tile) {
+              $(tile).toggleClass('selectedTile');
+            });
+          }
+
+          //make available wall positions selectable
+          let availableIndexes = [];
+          //add empty wall positions
+          g_editedPlayer.wall[index].forEach((type, index) => {
+            if (type == -1) {
+              availableIndexes.push(index);
+            }
+          });
+
+          //ensure no available indexes have type in column
+          g_editedPlayer.wall.forEach((row, rowIndex) => {
+            availableIndexes.forEach((i, iIndex) => {
+              if (row[i] == tileType) {
+                availableIndexes.splice(iIndex, 1);
+              }
+            });
+          });
+
+          //ensure no tiles of type already on row
+          g_editedPlayer.wall[index].forEach((type, index) => {
+            if (type == tileType) {
+              availableIndexes = [];
+              return false;
+            }
+          });
+
+          availableIndexes.forEach((i, iIndex) => {
+            $(`.playerMat[user=${g_userID}] #wall .patternLine`).eq(index)
+            .find('.tile').eq(i)
+            .attr('type', tileType)
+            .toggleClass('option');
+          });
+
+          //floorline handling
+          if ($(`.playerMat[user=${g_userID}] #floorLine .tile[type="-1"]`).length === 0) {
+            $(`.playerMat[user=${g_userID}] #floorLineTrashCan`)
+              .attr('type', tileType)
+              .toggleClass('option')
+              .removeClass('hidden');
+          }
+          else {
+            $(`.playerMat[user=${g_userID}] #floorLine .tile[type="-1"]`)
+              .slice(0, $(line).find('.tile').length)
+              .attr('type', tileType)
+              .toggleClass('option');
+          }
+          //set options to do something
+          $('.option').on('click', element => {
+            $('.tile').off('click');
+
+            let patternLineIndex = $('.selectedTile').parent().attr('patternlineindex');
+            let tileType = $('.selectedTile').attr('type');
+            //handle floor line a lil differently
+            let isTrashCan = $(element.target).attr('id') === 'floorLineTrashCan' || $(element.target).attr('id') === 'tcText';
+            if (isTrashCan) {
+              //nothing
+            }
+            else if ($(element.target).parent().attr('id') === 'floorLine') {
+              let floorLineCount = $(`#floorLine .option`).length;
+              for (let i = 0; i < floorLineCount; i++) {
+                if (g_editedPlayer.floorLine.length < 7) {
+                  g_editedPlayer.floorLine.push(tileType);
+                }
+              }
+            }
+            else { //wall tile selected
+              console.log('Wall tile selected.');
+              //update g_editedPlayer with selected tile
+              let selectedIndex = $(element.target).attr('index');
+              //insert tile into wall
+              g_editedPlayer.wall[patternLineIndex][selectedIndex] = tileType;
+            }
+
+            //clear pattern row in all cases
+            g_editedPlayer.patternLines[patternLineIndex].forEach((value, index, arr) => {
+              arr[index] = -1;
+            });
+            
+            updateUIFromEditedPlayer();
+            g_wallStateMachine.pushStep();
+          });
+
+          $('#pushResetButton').show();
+
+          return false;
+        });
+      if (!fullRowExists) {
+        $('#pushConfirmButton').show();
+      }
+      },
+      onReset: function() {
+
+      }
+    }
+  });
+  
+  function updateUIFromEditedPlayer() {
+    $(`.playerMat[user=${g_userID}] #patternLines`).html(getPatternLinesHTML(g_editedPlayer));
+    $(`.playerMat[user=${g_userID}] #wall`).html(getWallHTML(g_editedPlayer));
+    $(`.playerMat[user=${g_userID}] #floorLine`).html(getFloorLineHTML(g_editedPlayer));
+  }
+
+  function onPushResetButton() {
+    g_editedPlayer = JSON.parse(JSON.stringify(g_clientPlayer));
+    updateUIFromEditedPlayer();
+    $('#pushConfirmButton').hide();
+    g_wallStateMachine.pushStep();
+  }
+
+  function onPushConfirmButton() {
+    socket.emit('pushphaseUpdate', {userID: g_userID,
+                                    room: g_roomID,
+                                    newPlayer: g_editedPlayer}); //send off our player, wait for update
+  }
+  
   function updateFactories(factories) {
     $('.factories').empty();
     let i = 0;
@@ -201,25 +352,23 @@
     $('#centerBoard').append(newDiv);
   }
 
-  function updatePlayerMats(players, wallOffset=0) {
-    $('.playerMat').remove();
-    let turnOrder = 1;
-    players.forEach(player => {
-      //order?
-
-      //patternLines
-      let patternLinesHTML = '';
-      let i = 0;
-      player.patternLines.forEach(patternLine => {
-        patternLinesHTML += `<div class="patternLine" patternLineIndex="${i}">`;
-        patternLine.forEach(tileType => {
-          patternLinesHTML += `<div class="tile${tileType !== -1 ? ' placed' : ""}" type="${tileType}"></div>`;
-        });
-        patternLinesHTML += '</div>';
-        i++;
+  function getPatternLinesHTML(player) {
+    let patternLinesHTML = '';
+    let i = 0;
+    player.patternLines.forEach(patternLine => {
+      patternLinesHTML += `<div class="patternLine" patternLineIndex="${i}">`;
+      patternLine.forEach(tileType => {
+        patternLinesHTML += `<div class="tile${tileType !== -1 ? ' placed' : ""}" type="${tileType}"></div>`;
       });
-      //wall
-      let wallHTML = '';
+      patternLinesHTML += '</div>';
+      i++;
+    });
+    return patternLinesHTML;
+  }
+
+  function getWallHTML(player, wallOffset) {
+    let wallHTML = '';
+    if (!g_gameState.isFreeColor) {
       let t = wallOffset;
       player.wall.forEach(wallLine => {
         wallHTML += `<div class="patternLine">`;
@@ -230,15 +379,46 @@
         wallHTML += '</div>';
         t++;
       });
-      //floor line
-      const floorLineText = ['-1', '-1', '-2', '-2', '-2', '-3', '-3'];
-      let floorLineHTML = '';
-      for (let f = 0; f < 7; f++) {
-        let floorTilePlaced = (player.floorLine.length > f);
-        let tile =  floorTilePlaced ? player.floorLine[f] : -1;
-        floorLineHTML += `<div class="tile${floorTilePlaced ? ' placed' : ''}" type="${tile}">${floorLineText[f]}</div>`;
-      }
+    }
+    else {
+      let i = 0;
+      player.wall.forEach(wallLine => {
+        wallHTML += `<div class="patternLine" patternLineIndex="${i}">`;
+        let j = 0;
+        wallLine.forEach(tileType => {
+          wallHTML += `<div class="tile walltile" type="${tileType}" occupied="${tileType >= 0}" index="${j}"></div>`;
+          j++;
+        });
+        wallHTML += '</div>';
+        i++;
+      });
+    }
+    return wallHTML;
+  }
 
+  function getFloorLineHTML(player) {
+    const floorLineText = ['-1', '-1', '-2', '-2', '-2', '-3', '-3'];
+    let floorLineHTML = '';
+    for (let f = 0; f < 7; f++) {
+      let floorTilePlaced = (player.floorLine.length > f);
+      let tile =  floorTilePlaced ? player.floorLine[f] : -1;
+      floorLineHTML += `<div class="tile${floorTilePlaced ? ' placed' : ''}" type="${tile}">${floorLineText[f]}</div>`;
+    }
+    return floorLineHTML;
+  }
+
+  function updatePlayerMats(players, wallOffset=0, shouldUpdatePlayer=true) {
+    if (shouldUpdatePlayer) {
+      $('.playerMat').remove();
+    }
+    else {
+      $('.opponentMats').remove();
+    }
+    let turnOrder = 1;
+    players.forEach(player => {
+      let patternLinesHTML = getPatternLinesHTML(player);
+      let wallHTML = getWallHTML(player, wallOffset);
+      let floorLineHTML = getFloorLineHTML(player);
       //final product
       var newPlayerMatHTML = `
         <div class="playerMat" user="${player.userID}" isTurn="${g_gameState.currentTurnUserID === player.userID}">
@@ -246,6 +426,10 @@
             <div class="scoreboard">
               ${player.name}<br/>
               ${player.score} Points
+            </div>
+            <div id="pushStepButtons">
+              <button id="pushResetButton" style="display: none;">Reset</button>
+              <button id="pushConfirmButton" style="display: none;" >Confirm</button>
             </div>
             <div class="playerTurn">${turnOrder}</div>
           </div>
@@ -268,12 +452,15 @@
         </div>
       `;
       turnOrder++;      
-      if (g_userID === player.userID) {
+      if (g_userID === player.userID && shouldUpdatePlayer) {
         $('.playerMats').prepend(newPlayerMatHTML);
       }
       else {
         $('.opponentMats').append(newPlayerMatHTML);
       }
+
+      $('#pushResetButton').on('click', onPushResetButton);
+      $('#pushConfirmButton').on('click', onPushConfirmButton);
     });    
 
     // When we transform-scale down the opponent mats, apply this hack to remove whitespace
@@ -326,7 +513,7 @@
   $('#createGame').on('click', () => {
     let name = $('#nameInput').val();
     if (!name) name = "Nameless Buffoon";
-    socket.emit('createGame', { name: name, userID: g_userID });
+    socket.emit('createGame', { name: name, userID: g_userID, freecolor: $('#freecolor').hasClass("checked") });
   });
 
   //Start a created game.
@@ -347,6 +534,10 @@
     socket.emit('joinGame', { name, room: roomID, userID: g_userID});
   });
 
+  $('#freecolor').on('click', () => {
+    $('#freecolor').toggleClass("checked");
+  });
+
   socket.on('gameConnected', (data) => {
     console.log('gameConnected'+  data);
     g_roomID = data.room;
@@ -354,6 +545,7 @@
     $('#nameInput').hide();
     $('#createGame').hide();
     $('#joinGame').hide();
+    $('#freecolor').hide();
     $('#startGame').show();
   });
 
@@ -361,6 +553,7 @@
     g_gameState = data;
     $('#menuButtons').hide();
     $('.textEntry').show();
+    $('.rules').show();
     if (data.endGameObject) {
       onEndGame(data.endGameObject);
     }
@@ -374,9 +567,16 @@
 
     updateFactories(data.factories);
     updateCommunityPool(data.communityPool);
-    updatePlayerMats(data.players, data.wallOffset);
 
-    if (g_isClientsTurn) {
+    let shouldUpdatePlayer = !data.wallPushPhase.includes(g_userID) || g_gameState.players.length === data.wallPushPhase.length;
+    updatePlayerMats(data.players, data.wallOffset, shouldUpdatePlayer);
+
+    if (data.wallPushPhase.length) {
+      document.getElementById('turnAlert').play();
+      g_editedPlayer = JSON.parse(JSON.stringify(g_clientPlayer));
+      g_wallStateMachine.pushStep();
+    }
+    else if (g_isClientsTurn) {
       document.getElementById('turnAlert').play();
       g_turnStateMachine.beginTurn();
     }

@@ -47,6 +47,7 @@ io.on('connection', (socket) => {
     }
     socket.join(roomName);
     gameMap[roomName] = new Game(roomName);
+    gameMap[roomName].init(data.freecolor);
     gameMap[roomName].addPlayer(data.name, data.userID);
     socket.emit('gameConnected', { name: data.name, room: roomName, userID: data.userID, chatlog: [] });
 
@@ -86,7 +87,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('startGame', function(data){
-    //decide who goes first
     gameMap[data.room].endTurn();
     io.in(data.room).emit('gameUpdate', gameMap[data.room].getState());
   });
@@ -99,6 +99,12 @@ io.on('connection', (socket) => {
     let msgObject = {senderName: '', message: turnMessage};
     chatlogMap[data.room].push(msgObject);
     emitMessage(data.room, msgObject.message, msgObject.senderName);
+    io.in(data.room).emit('gameUpdate', gameMap[data.room].getState());
+  });
+
+  socket.on('pushphaseUpdate', (data) => {
+    console.log('Received push phase update');
+    gameMap[data.room].onPushUpdate(data.newPlayer);
     io.in(data.room).emit('gameUpdate', gameMap[data.room].getState());
   });
 

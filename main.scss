@@ -4,6 +4,7 @@ body {
 
 .menuButton {
     background-color: #888;
+    color: white;
 }
 
 .disable-selection {
@@ -91,4 +92,17 @@ body {
 .endGameTable {
     border: 2px solid black;
     padding: 4px;
+    background-color: #2eb62c;
 }
+
+.rules {
+    background: #999;
+    display: none;
+    padding-left: 8px;
+    text-align: center;
+}
+
+.menuButton.checked {
+    background-color: white;
+}
+

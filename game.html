@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!--<script type="text/javascript" src="http://livejs.com/live.js"></script>--> <!--autoreload, remove for production-->
+        <script type="text/javascript" src="http://livejs.com/live.js"></script>--> <!--autoreload, remove for production-->
         <title>Amarillo</title>
         <link rel="stylesheet" href="node_modules/skeleton-css/css/skeleton.css">
         <link rel="stylesheet" href="css/main.css">
@@ -15,10 +15,11 @@
     <body>
         <div class="container">
             <div id="menuButtons">
-                <button id="joinGame" class="menuButton" style="color:white;">Join / Reconnect</button>
-                <button id="createGame" class="menuButton" style="color: white;">Create Game</button>
+                <button id="joinGame" class="menuButton">Join / Reconnect</button>
+                <button id="createGame" class="menuButton">Create Game</button>
                 <button id="startGame" class="menuButton" style="color: #2E2;display:none;">Start Game</button>
-                <input type="text" placeholder="Your Name" id="nameInput">                
+                <input type="text" placeholder="Your Name" id="nameInput">
+                <button id="freecolor" class="menuButton">Loosey Goosey Variant</button>
             </div>
             <div>
             <div class="gameBoard" >
@@ -29,6 +30,10 @@
                     <form class="textEntry" style="display: none">
                         <textarea id="chatInput" cols="30" rows="10"></textarea><button>Send</button>
                     </form>
+                    <div id="rules" class="rules">
+                        Row: 2 | Column: 7 | Color: 10<br>
+                        <a href="https://www.ultraboardgames.com/azul/game-rules.php" target="_blank" rel="noopener noreferrer">Rules</a>
+                    </div>
                 </div>
                 <div id="centerBoard">
                     <div id="factories" class="factories"></div>
