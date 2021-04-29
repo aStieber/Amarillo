@@ -3,7 +3,6 @@
 (function init() { 
   let g_gameState; //todo: use window.localstorage
   let g_clientPlayer;
-  let g_isClientsTurn = false;
   let g_roomID;
   let g_userID;
 
@@ -320,6 +319,10 @@
                                     room: g_roomID,
                                     newPlayer: g_editedPlayer}); //send off our player, wait for update
   }
+
+  function isClientsTurn() {
+    return g_gameState.currentTurnUserID === g_userID;
+  }
   
   function updateFactories(factories) {
     $('.factories').empty();
@@ -331,7 +334,7 @@
         newDiv += `<div 
           class="tile placed" 
           type="${tile}" 
-          enabled="${g_isClientsTurn.toString()}" 
+          enabled="${isClientsTurn().toString()}" 
           factoryIndex="${i}"></div>
         `;
       });
@@ -346,7 +349,7 @@
     $('#communityPool').remove();
     let newDiv = `<div id="communityPool" class="communityPool factory flex-container" factoryIndex="-1" grabbed="${g_gameState.communityPoolFirstTakeUserID != ''}">`;
     pool.forEach(tile => {
-      newDiv += `<div class="tile placed" type="${tile}" draggable="${g_isClientsTurn.toString()}" factoryIndex="-1"></div>`;
+      newDiv += `<div class="tile placed" type="${tile}" draggable="${isClientsTurn().toString()}" factoryIndex="-1"></div>`;
     });
     newDiv += '</div>';
     $('#centerBoard').append(newDiv);
@@ -415,13 +418,14 @@
       $('.opponentMats .playerMat').remove();
     }
     let turnOrder = 1;
-    players.forEach(player => {
+    for (let index in players) {
+      let player = players[index];
       let patternLinesHTML = getPatternLinesHTML(player);
       let wallHTML = getWallHTML(player, wallOffset);
       let floorLineHTML = getFloorLineHTML(player);
       //final product
       var newPlayerMatHTML = `
-        <div class="playerMat" user="${player.userID}" isTurn="${g_gameState.currentTurnUserID === player.userID}">
+        <div class="playerMat" user="${player.userID}" isTurn="${g_gameState.currentTurnUserID === player.userID || g_gameState.wallPushPhase.includes(player.userID)}">
           <div class="topLine">
             <div class="scoreboard">
               ${player.name}<br/>
@@ -451,17 +455,20 @@
           </div>
         </div>
       `;
-      turnOrder++;      
-      if (g_userID === player.userID && shouldUpdatePlayer) {
-        $('.playerMats').prepend(newPlayerMatHTML);
+      turnOrder++;
+      if (g_userID === player.userID) {
+        if (shouldUpdatePlayer) {
+          $('.playerMats').prepend(newPlayerMatHTML);
+          $('#pushResetButton').on('click', onPushResetButton);
+          $('#pushConfirmButton').on('click', onPushConfirmButton);
+        }
       }
       else {
         $('.opponentMats').append(newPlayerMatHTML);
       }
 
-      $('#pushResetButton').on('click', onPushResetButton);
-      $('#pushConfirmButton').on('click', onPushConfirmButton);
-    });    
+
+    }    
 
     // When we transform-scale down the opponent mats, apply this hack to remove whitespace
     if (!$('.opponentMatsWrapper').hasClass('transform-hack-applied')) {
@@ -564,7 +571,6 @@
         g_clientPlayer = player;
       }
     });
-    g_isClientsTurn = g_gameState.currentTurnUserID === g_userID;
 
     updateFactories(data.factories);
     updateCommunityPool(data.communityPool);
@@ -572,12 +578,12 @@
     let shouldUpdatePlayer = !data.wallPushPhase.includes(g_userID) || g_gameState.players.length === data.wallPushPhase.length || isFirstUpdate;
     updatePlayerMats(data.players, data.wallOffset, shouldUpdatePlayer);
 
-    if (data.wallPushPhase.length) {
+    if (data.wallPushPhase.length && shouldUpdatePlayer) {
       document.getElementById('turnAlert').play();
       g_editedPlayer = JSON.parse(JSON.stringify(g_clientPlayer));
       g_wallStateMachine.pushStep();
     }
-    else if (g_isClientsTurn) {
+    else if (isClientsTurn()) {
       document.getElementById('turnAlert').play();
       g_turnStateMachine.beginTurn();
     }

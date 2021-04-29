@@ -354,6 +354,7 @@ class Game {
         break;
       }
     } 
+    this.currentTurn = -1;
     if (this.wallPushPhase.length === 0) {
       this.endTurn();
     }
@@ -388,7 +389,7 @@ class Game {
       factories: this.factories,
       communityPool: this.communityPool,
       wallOffset: this.wallOffset,
-      currentTurnUserID: this.players[this.currentTurn].userID,
+      currentTurnUserID: (this.currentTurn === -1 ? "" : this.players[this.currentTurn].userID),
       communityPoolFirstTakeUserID: this.communityPoolFirstTakeUserID,
       endGameObject: (this.endGameObject ? this.endGameObject : false),
       isFreeColor: this.isFreeColor,

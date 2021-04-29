@@ -51,9 +51,15 @@ io.on('connection', (socket) => {
     gameMap[roomName].addPlayer(data.name, data.userID);
     socket.emit('gameConnected', { name: data.name, room: roomName, userID: data.userID, chatlog: [] });
 
-    let msgObject = {senderName: '', message: getConnectionMessage(data.name, roomName)};
-    chatlogMap[roomName] = [msgObject];
-    emitMessage(roomName, msgObject.message, msgObject.senderName);
+    chatlogMap[roomName] = [];
+    if (data.freecolor) {
+      let colorMsg = {senderName: '', message: "The Goose Is Loose."};
+      chatlogMap[roomName].push(colorMsg);
+      emitMessage(roomName, colorMsg.message, colorMsg.senderName);
+    }
+    let connMsg = {senderName: '', message: getConnectionMessage(data.name, roomName)};
+    chatlogMap[roomName].push(connMsg);
+    emitMessage(roomName, connMsg.message, connMsg.senderName);
   });
 
   // Connect the Player 2 to the room he requested. Show error if room full.
