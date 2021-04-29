@@ -21,7 +21,7 @@ $tileColors: #7300de, #ffbf00, #ff1e00, #18a100, #0085de;
         $c: nth($tileColors, $i);
 
         &[type="#{$i - 1}"] {
-            &.placed, &.walltile[occupied="true"]    {
+            &.placed, &.walltile:not([type="-1"])    {
                 background: $c;
             }
             &.option {

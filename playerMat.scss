@@ -29,7 +29,7 @@
 	background: #222;
 }
 
-#wall .tile[occupied=false][option=false] {
+#wall .tile[occupied=false]:not([type="-1"]) {
 	opacity: .1;
 }
 

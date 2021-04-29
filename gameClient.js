@@ -550,6 +550,7 @@
   });
 
   socket.on('gameUpdate', (data) => {
+    let isFirstUpdate = (g_gameState === null);
     g_gameState = data;
     $('#menuButtons').hide();
     $('.textEntry').show();
@@ -568,7 +569,7 @@
     updateFactories(data.factories);
     updateCommunityPool(data.communityPool);
 
-    let shouldUpdatePlayer = !data.wallPushPhase.includes(g_userID) || g_gameState.players.length === data.wallPushPhase.length;
+    let shouldUpdatePlayer = !data.wallPushPhase.includes(g_userID) || g_gameState.players.length === data.wallPushPhase.length || isFirstUpdate;
     updatePlayerMats(data.players, data.wallOffset, shouldUpdatePlayer);
 
     if (data.wallPushPhase.length) {
