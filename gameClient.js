@@ -516,11 +516,22 @@
     socket.emit('debugEndTurn', { room: g_roomID });
   });
 
+  $( "#gameModeDialog" ).dialog({
+    autoOpen: false,
+    modal: true,
+    draggable: false
+  });
+
   // Create a new game. Emit newGame event.
   $('#createGame').on('click', () => {
+    $("#gameModeDialog").dialog('open');
+  });
+
+  $('#dialogAccept').on('click', () => {
     let name = $('#nameInput').val();
     if (!name) name = "Nameless Buffoon";
-    socket.emit('createGame', { name: name, userID: g_userID, freecolor: $('#freecolor').hasClass("checked") });
+    socket.emit('createGame', { name: name, userID: g_userID, freecolor: $('#freeColorRadioButton')[0].checked});
+    $("#gameModeDialog").dialog('close');
   });
 
   //Start a created game.
@@ -541,9 +552,7 @@
     socket.emit('joinGame', { name, room: roomID, userID: g_userID});
   });
 
-  $('#freecolor').on('click', () => {
-    $('#freecolor').toggleClass("checked");
-  });
+
 
   socket.on('gameConnected', (data) => {
     console.log('gameConnected'+  data);
@@ -552,7 +561,6 @@
     $('#nameInput').hide();
     $('#createGame').hide();
     $('#joinGame').hide();
-    $('#freecolor').hide();
     $('#startGame').show();
   });
 

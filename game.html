@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!--<script type="text/javascript" src="http://livejs.com/live.js"></script>--> <!--autoreload, remove for production-->
+        <script type="text/javascript" src="http://livejs.com/live.js"></script>--> <!--autoreload, remove for production-->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
         <title>Amarillo</title>
         <link rel="stylesheet" href="node_modules/skeleton-css/css/skeleton.css">
         <link rel="stylesheet" href="css/main.css">
@@ -13,13 +16,17 @@
         <source src="crystalbell.mp3" type="audio/mpeg">
     </audio>
     <body>
+        <div id="gameModeDialog" title="Game Mode Selection" class="dialog">
+            <input type="radio" id="standardRadioButton" name="mode" checked>Standard Mode<br>
+            <input type="radio" id="freeColorRadioButton" name="mode">Loosey Goosey Mode<br>
+            <button id="dialogAccept">Start</button>
+        </div>
         <div class="container">
             <div id="menuButtons">
                 <button id="joinGame" class="menuButton">Join / Reconnect</button>
                 <button id="createGame" class="menuButton">Create Game</button>
                 <button id="startGame" class="menuButton" style="color: #2E2;display:none;">Start Game</button>
                 <input type="text" placeholder="Your Name" id="nameInput">
-                <button id="freecolor" class="menuButton">Loosey Goosey Variant</button>
             </div>
             <div>
             <div class="gameBoard" >
@@ -46,7 +53,6 @@
                 </div>
             </div>
         </div>
-        <script src="node_modules/jquery/dist/jquery.min.js"></script>
         <script src="node_modules/js-cookie/src/js.cookie.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script src='node_modules/javascript-state-machine/dist/state-machine.min.js'></script>
