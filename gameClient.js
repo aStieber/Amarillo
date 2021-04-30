@@ -315,6 +315,7 @@
   }
 
   function onPushConfirmButton() {
+    $('#pushConfirmButton').hide();
     socket.emit('pushphaseUpdate', {userID: g_userID,
                                     room: g_roomID,
                                     newPlayer: g_editedPlayer}); //send off our player, wait for update
