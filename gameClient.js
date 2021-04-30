@@ -562,6 +562,7 @@
     $('#createGame').hide();
     $('#joinGame').hide();
     $('#startGame').show();
+    $('.chat').show();
   });
 
   socket.on('gameUpdate', (data) => {
