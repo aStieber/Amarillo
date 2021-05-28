@@ -531,9 +531,23 @@
     $("#gameModeDialog").dialog('open');
   });
 
-  $('#dialogAccept').on('click', () => {
+  // Hydrate the nameInput with the player's previously saved name.
+  if (localStorage.getItem('name')) {
+    $('#nameInput').val(localStorage.getItem('name'));
+  }
+  // Update local storage with the player's name before joining a game.
+  function obtainPlayerName() {
     let name = $('#nameInput').val();
-    if (!name) name = "Nameless Buffoon";
+    if (name) {
+      localStorage.setItem('name', name);
+    } else {
+      localStorage.removeItem('name');
+      name = 'Nameless Buffoon';
+    }
+  }
+
+  $('#dialogAccept').on('click', () => {
+    const name = obtainPlayerName();
     socket.emit('createGame', { name: name, userID: g_userID, freecolor: $('#freeColorRadioButton')[0].checked});
     $("#gameModeDialog").dialog('close');
   });
@@ -544,22 +558,32 @@
   });
 
   // Join an existing game on the entered roomID. Emit the joinGame event.
-  $('#joinGame').on('click', () => {
-    let name = $('#nameInput').val();
-    if (!name) name = "Nameless Buffoon";
-    let roomID = prompt("Please enter the room ID you with to join. Example: r1");
-    if (!roomID)
-    {
-      alert('Please enter a roomID.');
+  $('#joinGame').on('click', async () => {
+    // For convenience, ask the server for the latest room id and pre-fill the dialog with it.
+    let defaultRoom;
+    try {
+      const room = await fetch('/latest_room').then(resp => resp.json());
+      defaultRoom = room.id;
+    } catch (e) {
+      console.error(e);
+    }
+
+    let roomID = prompt("Please enter the room ID you with to join. Example: r1", defaultRoom);
+    if (roomID === null) { // clicked cancel
       return;
     }
+    if (!roomID) {
+      return alert('Please enter a roomID.');
+    }
+
+    const name = obtainPlayerName();
     socket.emit('joinGame', { name, room: roomID, userID: g_userID});
   });
 
 
 
   socket.on('gameConnected', (data) => {
-    console.log('gameConnected'+  data);
+    console.log('gameConnected', data);
     g_roomID = data.room;
     applyChatlog(data.chatlog);
     $('#nameInput').hide();
