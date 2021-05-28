@@ -1,63 +1,77 @@
-#messages { 
+$spacing: 10px;
+
+#messages {
 	list-style-type: none;
 	background: white;
 	border: 1px black solid;
 	height: 400px;
-	display:flex;
+	display: flex;
 	flex-direction: column;
-	align-items:flex;
 	overflow-y: scroll;
-}
-#messages li { 
-	padding-left: 10px;
-	margin-top: 1px;
-	margin-bottom: 0px;
-	word-wrap: break-word;
+	margin-bottom: $spacing;
 
-}
-#messages li:nth-child(odd) { 
-	background: #eee;
-}
-#messages li:nth-child(even) { 
-	background: #bbb;
+	li {
+		padding-left: 10px;
+		margin-top: 1px;
+		margin-bottom: 0px;
+		word-wrap: break-word;
+
+		&:nth-child(odd) {
+			background: #eee;
+		}
+		&:nth-child(even) {
+			background: #bbb;
+		}
+
+		&.serverMessage:nth-child(odd) {
+			background: #d08aff;
+		}
+		&.serverMessage:nth-child(even) {
+			background: #ba52ff;
+		}
+	}
 }
 
-#messages li.serverMessage:nth-child(odd) { 
-	background: #d08aff;
-}
-
-#messages li.serverMessage:nth-child(even) { 
-	background: #ba52ff;
-}
-
-.chat .textEntry {
+.textEntry {
 	margin: 0px;
-}
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: $spacing;
 
-.textEntry textarea { 
-	border: 0;
-	margin-right: .5%;
-	min-width: 86%;
-	max-width: 86%;
-	margin-bottom: 0px;
-	margin-top: 0px;
-}
+	textarea {
+		border: 0;
+		margin: 0;
+	}
 
-.textEntry button {
-	position:absolute;
-	font-size: 10px;
-	padding: 4px;
-	background: #27F;
-	color: white;
+	button {
+		display: flex;
+		align-items: center;
+		height: 30px;
+		font-size: 10px;
+		padding: 4px;
+		background: #27F;
+		color: white;
+		margin: 0;
+		margin-left: $spacing;
+	}
 }
 
 .chat {
 	width: 30%;
+	min-width: 30%;
 	border: 2px solid black;
 	background: #222;
-	padding: 10px;
+	padding: $spacing;
+	padding-bottom: 0;
 }
 
 .expander {
 	height: 100%;
+}
+
+.rules {
+	background: #999;
+	display: none;
+	text-align: center;
+	margin-bottom: $spacing;
 }
