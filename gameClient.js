@@ -49,10 +49,10 @@
 
           let selectedTiles;
           if (fIndex == -1) {
-            selectedTiles = $('#communityPool').find('[type="' + tileType + '"]');
+            selectedTiles = $('#communityPool').find(`[type="${tileType}"]`);
           }
           else {
-            selectedTiles = $('#factories').children().eq(fIndex).find('[type="' + tileType + '"]');
+            selectedTiles = $(`.factory[factoryIndex="${fIndex}"]`).find(`[type="${tileType}"]`);
           }
           //highlight selected type in factory;
           selectedTiles.toggleClass('selectedTile');
@@ -144,7 +144,7 @@
           }
 
           socket.emit('clientMove', { 
-            factoryIndex: $('.selectedTile:first').attr('factoryindex'),
+            factoryIndex: $('.selectedTile:first').attr('factoryIndex'),
             floorLineCount: Math.max(selectedCount - highlightedCount, 0),
             tileType,
             targetRow: patternLineIndex,
@@ -327,28 +327,31 @@
   
   function updateFactories(factories) {
     $('.factories').empty();
-    let i = 0;
-    factories.forEach(factory => {
-      factory.sort();
-      let newDiv = `<div class="factory flex-container">`;
-      factory.forEach(tile => {
-        newDiv += `<div 
-          class="tile placed" 
-          type="${tile}" 
-          enabled="${isClientsTurn().toString()}" 
-          factoryIndex="${i}"></div>
-        `;
-      });
-      newDiv += '</div>';
-      $('.factories').append(newDiv);
-      i++;
+    factories.forEach((factory, i) => {
+      if (!factory.length) {
+        return;
+      }
+      factory.sort((a, b) => a - b);
+
+      $('.factories').append(`
+        <div class="factory" factoryIndex="${i}">
+          ${factory.map(tile => `
+            <div
+              class="tile placed"
+              type="${tile}"
+              enabled="${isClientsTurn().toString()}"
+              factoryIndex="${i}">
+            </div>
+          `).join('')}
+        </div>
+      `);
     });
   }
 
   function updateCommunityPool(pool) {
-    pool.sort();
+    pool.sort((a, b) => a - b);
     $('#communityPool').remove();
-    let newDiv = `<div id="communityPool" class="communityPool factory flex-container" factoryIndex="-1" grabbed="${g_gameState.communityPoolFirstTakeUserID != ''}">`;
+    let newDiv = `<div id="communityPool" class="communityPool factory" factoryIndex="-1" grabbed="${g_gameState.communityPoolFirstTakeUserID != ''}">`;
     pool.forEach(tile => {
       newDiv += `<div class="tile placed" type="${tile}" draggable="${isClientsTurn().toString()}" factoryIndex="-1"></div>`;
     });
