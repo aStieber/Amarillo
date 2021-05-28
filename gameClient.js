@@ -327,10 +327,10 @@
   
   function updateFactories(factories) {
     $('.factories').empty();
+    if (factories.every(f => f.length === 0)) {
+      return;
+    }
     factories.forEach((factory, i) => {
-      if (!factory.length) {
-        return;
-      }
       factory.sort((a, b) => a - b);
 
       $('.factories').append(`
