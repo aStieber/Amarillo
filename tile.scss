@@ -1,5 +1,21 @@
-$tileColors: #7300de, #ffbf00, #ff1e00, #18a100, #0085de;
-//#fcfc03, #77fc03, #fc03f0, #03fcf4, #a103fc;
+@function stripedBackground($color, $angle: 45deg, $stripeSpacing: 12px, $stripeWidth: 7px) {
+    $stripeColor: scale-color($color, $lightness: -10%);
+
+    @return repeating-linear-gradient(
+        $angle,
+        $color,
+        $color $stripeSpacing,
+        $stripeColor $stripeSpacing,
+        $stripeColor $stripeSpacing + $stripeWidth
+    );
+}
+
+$tileColors:
+    0 #7300de #7300de,
+    1 #ffbf00 #ffbf00,
+    2 #ff3300 stripedBackground(#ff3300, 90deg, 6px, 2px),
+    3 #18a100 stripedBackground(#18a100, 45deg),
+    4 #0085de stripedBackground(#0085de, 135deg);
 
 .tile {
     box-sizing: border-box;
@@ -17,12 +33,10 @@ $tileColors: #7300de, #ffbf00, #ff1e00, #18a100, #0085de;
         padding-top:100%;
     }
 
-    @for $i from 1 through length($tileColors) {
-        $c: nth($tileColors, $i);
-
-        &[type="#{$i - 1}"] {
-            &.placed, &.walltile:not([type="-1"]):not(.option)    {
-                background: $c;
+    @each $type, $c, $bg in $tileColors {
+        &[type="#{$type}"] {
+            &.placed, &.walltile:not(.option)    {
+                background: $bg;
             }
             &.option {
                 border: 2px dotted $c;  
@@ -47,10 +61,8 @@ $tileColors: #7300de, #ffbf00, #ff1e00, #18a100, #0085de;
 
 
 .messageTile {
-    @for $i from 1 through length($tileColors) {
-        $c: nth($tileColors, $i);
-
-        &[type="#{$i - 1}"] {
+    @each $type, $c in $tileColors {
+        &[type="#{$type}"] {
             color: $c;
             background: $c;
         }

@@ -1,4 +1,4 @@
-/* global Cookies, io, StateMachine, $*/
+/* global Cookies, io, StateMachine */
 
 (function init() { 
   let g_gameState; //todo: use window.localstorage
@@ -159,7 +159,7 @@
         $('.selectedTile').toggleClass('selectedTile');
         $('#floorLine .tile.option').attr('type', -1);
         $('#floorLineTrashCan').attr('type', -1).addClass('hidden');
-        $('.tile.option').toggleClass('option');
+        $('.tile.option').attr('type', -1).toggleClass('option');
         this.onBeginTurn();
       },
       onReset: function() {
@@ -645,19 +645,20 @@
   function emitMessage(msg) {
     if (msg.length > 0) {
       socket.emit('msgSent', {room: g_roomID, message: msg.slice(0, 150), senderName: g_clientPlayer.name});
-      $('#chatInput').val('');
     }
   }
 
-  $('.textEntry').submit(function(e){
+  $('.textEntry').on('submit', function(e) {
     e.preventDefault(); // prevents page reloading
     emitMessage($('#chatInput').val());
+    $('#chatInput').val('');
     return false;
   });
 
-  $('#chatInput').keydown(function() {
-    if (event.keyCode == 13) { //enter
-      emitMessage($('#chatInput').val());
+  $('#chatInput').on('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // prevents newline
+      $('.textEntry').trigger('submit');
     }
   });
 

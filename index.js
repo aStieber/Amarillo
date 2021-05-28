@@ -1,4 +1,3 @@
-/* global require, __dirname, process */
 const { Game } = require('./gameServer');
 
 const express = require('express');

@@ -30,7 +30,7 @@
 }
 
 #wall .tile[occupied=false]:not([type="-1"]):not(.option) {
-	opacity: .1;
+	opacity: .2;
 }
 
 #wall {
