@@ -24,6 +24,14 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'game.html'));
 });
 
+app.get('/latest_room', (req, res) => {
+  if (rooms) {
+    res.json({id: `r${rooms}`});
+  } else {
+    res.status(404).end();
+  }
+});
+
 function getConnectionMessage(name, room) {
   return `${name.slice(0, 20).replace(/\W/g, '')} connected to room '${room}'.`;
 }
