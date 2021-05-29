@@ -544,6 +544,7 @@
       localStorage.removeItem('name');
       name = 'Nameless Buffoon';
     }
+    return name;
   }
 
   $('#dialogAccept').on('click', () => {
