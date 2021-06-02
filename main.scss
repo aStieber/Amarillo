@@ -91,3 +91,17 @@ label {
     background-color: white;
 }
 
+#debug {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+
+    button {
+        background: #888;
+        color: white;
+        &:disabled {
+            background: #666;
+            color: gray;
+        }
+    }
+}
