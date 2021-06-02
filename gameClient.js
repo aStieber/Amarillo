@@ -595,7 +595,7 @@
   });
 
   socket.on('gameUpdate', (data) => {
-    let isFirstUpdate = (g_gameState === null);
+    const isFirstUpdate = !g_gameState;
     g_gameState = data;
     $('#menuButtons').hide();
     $('.textEntry').show();
@@ -626,6 +626,9 @@
       g_turnStateMachine.beginTurn();
     }
 
+    if (isFirstUpdate && devEnabled) {
+      initDebugControls(g_gameState);
+    }
   });
 
   function applyChatlog(chatlog) {
@@ -689,5 +692,53 @@
       $('.textEntry').trigger('submit');
     }
   });
+
+  
+  function initDebugControls(gameState) {
+    // Automatically place tiles for debugging
+    const autoplay = () => {
+      if (!isClientsTurn()) { return false; }
+
+      // select some tiles
+      $('.factory .tile:not(.selectedTile)').first().trigger('click');
+
+      // we need to know if these are the last tiles, to stop the loop
+      const moreTilesRemaining = $('.factory .tile:not(.selectedTile)').length > 0;
+
+      // place the tiles
+      $('.playerMats .tile.option').first().trigger('click');
+      return moreTilesRemaining;
+    };
+
+    // Place tiles until round ends, assuming single player mode
+    const autoplayRound = async () => {
+      for (let i = 0; i < 100; i++) { // this would be a while(true) if I was more confident
+        const moreTilesRemaining = autoplay();
+        // if these are the last tiles, stop the loop
+        if (!moreTilesRemaining) {
+          break;
+        }
+        // wait a bit for the server to update
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    };
+
+    const debugDiv = $('<div id="debug"></div>');
+    const autoplayButton = $('<button id="autoplay">autoplay</button>');
+    autoplayButton.on('click', autoplay);
+    debugDiv.append(autoplayButton);
+
+    if (gameState.players.length === 1) {
+      const autoplayAllButton = $('<button id="autoplay-all">autoplay round</button>');
+      autoplayAllButton.on('click', async () => {
+        autoplayAllButton.prop('disabled', true);
+        await autoplayRound();
+        autoplayAllButton.prop('disabled', false);
+      });
+      debugDiv.append(autoplayAllButton);
+    }
+
+    $('body').append(debugDiv);
+  }
 
 }());
