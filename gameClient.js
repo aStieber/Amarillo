@@ -626,6 +626,12 @@
       g_turnStateMachine.beginTurn();
     }
 
+    if (isFirstUpdate && g_gameState.isFreeColor) {
+      let gooseAlert = document.getElementById('gooseAlert');
+      gooseAlert.volume = 0.02;
+      gooseAlert.play();
+    }
+
     if (isFirstUpdate && devEnabled) {
       initDebugControls(g_gameState);
     }
