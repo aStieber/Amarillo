@@ -60,7 +60,7 @@ io.on('connection', (socket) => {
 
     chatlogMap[roomName] = [];
     if (data.freecolor) {
-      let colorMsg = {senderName: '', message: "The Goose Is Loose."};
+      let colorMsg = {senderName: '', message: "The Goose is Loose."};
       chatlogMap[roomName].push(colorMsg);
       emitMessage(roomName, colorMsg.message, colorMsg.senderName);
     }
@@ -129,5 +129,6 @@ io.on('connection', (socket) => {
   });
 
 });
-
-server.listen(process.env.PORT || 5000);
+let port = process.env.PORT || 5000;
+console.log('Listening on port: ' + port);
+server.listen(port);
