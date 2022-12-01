@@ -8,7 +8,7 @@ const deepCopyArray = (a) => $.extend(true, (Array.isArray(a) ? [] : {}), a);
 
 
 function getColumnFromRow(rowIndex, tileType, wallOffset=0) {
-  //https://jsfiddle.net/p2ebduqk/2/
+  //  
   return (wallOffset + tileType - rowIndex + 5) % 5;
 }
 
@@ -368,14 +368,16 @@ class Game {
 
   fillFactories() {
     this.factories = [];
-    let playerCount = this.players.length;
-    for (let i = 0; i < (playerCount * 2 + 1); i++) {
+    let numFactories = (this.players.length * 2) + 1;
+    for (let i = 0; i < numFactories; i++) {
       if (this.tilePool.length >= 4) {
         this.factories.push(this.tilePool.slice(0, 4));
         this.tilePool = this.tilePool.slice(4);
       }
       else {
-        //refill, there are special rules here though
+        let factory = [];
+        factory = this.tilePool; //remaining tiles
+        this.tilePool = [];
         this.refillTilePool();
         i--;
       }
@@ -401,6 +403,28 @@ class Game {
     this.isFreeColor = isFreeColor;
   }
 
+  getTilesOnBoards() {
+    let output = new Array(5).fill(0);
+    this.players.forEach(player => {
+      //wall
+      player.wall.forEach(line => {
+        line.forEach(tile => {
+          if (tile >= 0) {
+            output[tile]++;
+          }
+        });
+      });
+      //patternLines
+      player.patternLines.forEach(line => {
+        line.forEach(tile => {
+          if (tile >= 0) {
+            output[tile]++;
+          }
+        });
+      });
+    });
+    return output;
+  }
 
   refillTilePool() {
     function getRandomInt(min, max) {
@@ -408,13 +432,15 @@ class Game {
       max = Math.floor(max);
       return Math.floor(Math.random() * (max - min)) + min; //min <= r < max
     }
+
+    let inPlayCounts = this.getTilesOnBoards();
+    let pool = []
     //100 tiles, 20 of each type.
-    let pool = new Array(100);
-    for (var i = 0; i < 100; i++) {
-      pool[i] = i % 5;
+    for (let i = 0; i < 5; i++) {
+      pool = pool.concat(Array(20 - inPlayCounts[i]).fill(i));
     }
     //fisher-yates
-    for (var f = 99; f > 0; f--) {
+    for (var f = pool.length - 1; f > 0; f--) {
       let j = getRandomInt(0, f + 1);
       [pool[f], pool[j]] = [pool[j], pool[f]];
     }
