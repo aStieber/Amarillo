@@ -1,6 +1,7 @@
 /* global require, module */
 
 const { JSDOM } = require('jsdom');
+const { EventEmitter } = require('events');
 const { window } = new JSDOM('<html></html>');
 const $ = require('jquery')(window);
 
@@ -157,8 +158,10 @@ class Player {
   }
 }
 
-class Game {
+class Game extends EventEmitter {
   constructor(roomName) {
+    super();
+
     this.roomName = roomName;
     this.tilePool = [];
     this.factories = [];
@@ -170,8 +173,6 @@ class Game {
     this.communityPoolFirstTakeUserID = '';
     this.isFreeColor = false;
     this.wallPushPhase = [];
-
-    this.refillTilePool();
   }
 
   addPlayer(name, userID) {
@@ -292,6 +293,7 @@ class Game {
       this.endGameObject = this.getEndGameObject();
     }
     else {
+      this.emit('gameMessage', `Turn ${this.roundCount + 1}.`); //1-based for user
       this.fillFactories();
 
       if (this.communityPoolFirstTakeUserID !== '') {
@@ -444,6 +446,7 @@ class Game {
       let j = getRandomInt(0, f + 1);
       [pool[f], pool[j]] = [pool[j], pool[f]];
     }
+    this.emit('gameMessage', `Refilled tile bag with ${pool.length} tiles.`);
     this.tilePool = pool;
   }
 

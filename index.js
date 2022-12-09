@@ -41,6 +41,7 @@ let chatlogMap = {};
 
 io.on('connection', (socket) => {
   function emitMessage(room, message, senderName) {
+    console.log(room);
     io.in(room).emit('chatUpdate', {message: message, senderName});
   }
 
@@ -57,6 +58,12 @@ io.on('connection', (socket) => {
     gameMap[roomName].init(data.freecolor);
     gameMap[roomName].addPlayer(data.name, data.userID);
     socket.emit('gameConnected', { name: data.name, room: roomName, userID: data.userID, chatlog: [] });
+
+    gameMap[roomName].on('gameMessage', msg =>
+    {
+      console.log('message: ' + msg);
+      emitMessage(roomName, msg, '');
+    });
 
     chatlogMap[roomName] = [];
     if (data.freecolor) {
