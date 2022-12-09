@@ -39,11 +39,30 @@ function getConnectionMessage(name, room) {
 let gameMap = {};
 let chatlogMap = {};
 
+function emitGlobalRoomState() {
+  io.emit('roomList', getActiveRooms());
+}
+
+function getActiveRooms() {
+  return Object.entries(gameMap)
+    .filter(([, game]) => !game.endGameObject)
+    .map(([roomName, game]) => ({
+      roomName,
+      ownerName: game.players[0].name,
+      roundCount: game.roundCount,
+      playerCount: game.players.length,
+      playerIDs: game.players.map(p => p.userID),
+      isFreeColor: game.isFreeColor,
+    })
+  );
+}
+
 io.on('connection', (socket) => {
   function emitMessage(room, message, senderName) {
     io.in(room).emit('chatUpdate', {message: message, senderName});
   }
 
+  socket.emit('roomList', getActiveRooms());
 
   // Create a new game room and notify the creator of game.
   socket.on('createGame', (data) => {
@@ -67,6 +86,7 @@ io.on('connection', (socket) => {
     let connMsg = {senderName: '', message: getConnectionMessage(data.name, roomName)};
     chatlogMap[roomName].push(connMsg);
     emitMessage(roomName, connMsg.message, connMsg.senderName);
+    emitGlobalRoomState();
   });
 
   socket.on('joinGame', function (data) {
@@ -79,12 +99,13 @@ io.on('connection', (socket) => {
       console.log('joinGame: game exists but socket room does not exist. rejoining anyway.', data);
     }
     socket.join(data.room);
-    socket.emit('gameConnected', { name: data.name, room: data.room, userID: data.userID, chatlog: chatlogMap[data.room] });
 
     let hasGameStarted = gameMap[data.room].roundCount > -1;
     let isGameFull = gameMap[data.room].players.length > 3;
     //check if player is already in game
     let playerAlreadyInGame = gameMap[data.room].players.some(p => p.userID === data.userID);
+
+    let isSpectator = false;
 
     if (playerAlreadyInGame) {
       let msgObject = {senderName: '', message: `${data.name} has reconnected to room '${data.room}'.`};
@@ -93,17 +114,27 @@ io.on('connection', (socket) => {
     }
     else if (!hasGameStarted && !isGameFull) {
       gameMap[data.room].addPlayer(data.name, data.userID);
+      emitGlobalRoomState();
 
       let msgObject = {senderName: '', message: getConnectionMessage(data.name, data.room)};
       chatlogMap[data.room].push(msgObject);
       emitMessage(data.room, msgObject.message, msgObject.senderName);
     }
     else {
+      isSpectator = true;
       console.log('joinGame: game is full or in progress. joining as spectator.', data);
       let msgObject = {senderName: '', message: `spectator ${data.name} connected to room '${data.room}'.`};
       chatlogMap[data.room].push(msgObject);
       emitMessage(data.room, msgObject.message, msgObject.senderName);
     }
+
+    socket.emit('gameConnected', {
+      name: data.name,
+      room: data.room,
+      userID: data.userID,
+      chatlog: chatlogMap[data.room],
+      isSpectator,
+    });
 
     if (hasGameStarted) {
       socket.emit('gameUpdate', gameMap[data.room].getState()); //emit this only to reconnecter
@@ -113,6 +144,7 @@ io.on('connection', (socket) => {
   socket.on('startGame', function(data){
     gameMap[data.room].endTurn();
     io.in(data.room).emit('gameUpdate', gameMap[data.room].getState());
+    emitGlobalRoomState();
   });
 
 
@@ -123,7 +155,11 @@ io.on('connection', (socket) => {
     let msgObject = {senderName: '', message: turnMessage};
     chatlogMap[data.room].push(msgObject);
     emitMessage(data.room, msgObject.message, msgObject.senderName);
-    io.in(data.room).emit('gameUpdate', gameMap[data.room].getState());
+    const gameState = gameMap[data.room].getState();
+    io.in(data.room).emit('gameUpdate', gameState);
+    if (gameState.endGameObject) {
+      emitGlobalRoomState();
+    }
   });
 
   socket.on('pushphaseUpdate', (data) => {
