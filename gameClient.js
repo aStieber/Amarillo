@@ -13,7 +13,20 @@
   let devUserID = params.get('userID');
   let devIsHost = params.get('isHost');
 
-  const socket = io.connect();
+  const areWebsocketsEnabled = () => {
+    // override via query param: ?enableWebsockets=1
+    const param = params.get('enableWebsockets');
+    if (typeof param === 'string') {
+      return !['0', 'false'].includes(param);
+    }
+    // We're using render as a heroku replacement, but websockets timeout after 5 minutes.
+    // https://community.render.com/t/socket-io-in-a-node-app/3051/6
+    return !window.location.hostname.endsWith('.onrender.com');
+  };
+
+  const socket = io.connect(window.location.host, {
+    transports: ['polling', areWebsocketsEnabled() && 'websocket'],
+  });
   //generate random ID number for this browser and store it in a cookie.
   if (!Cookies.get('ID')) {
     Cookies.set('ID', Math.random().toString(36).substr(2, 9), {expires: 1000, path: ''}); 
