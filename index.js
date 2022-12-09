@@ -69,33 +69,44 @@ io.on('connection', (socket) => {
     emitMessage(roomName, connMsg.message, connMsg.senderName);
   });
 
-  // Connect the Player 2 to the room he requested. Show error if room full.
   socket.on('joinGame', function (data) {
-    var room = io.nsps['/'].adapter.rooms[data.room];
+    if (!gameMap[data.room]) {
+      console.log('joinGame failed, game does not exist.', data);
+      return;
+    }
 
-    if (room && gameMap[data.room].players.length <= 4) { //room exists and <4 players
-      socket.join(data.room);
-      let hasGameStarted = gameMap[data.room].roundCount > -1;
-      //check if player is already in game
-      let playerAlreadyInGame = gameMap[data.room].players.some(p => p.userID === data.userID);
+    if (!io.nsps['/'].adapter.rooms[data.room]) {
+      console.log('joinGame: game exists but socket room does not exist. rejoining anyway.', data);
+    }
+    socket.join(data.room);
+    socket.emit('gameConnected', { name: data.name, room: data.room, userID: data.userID, chatlog: chatlogMap[data.room] });
 
-      if (playerAlreadyInGame) {
-        io.in(data.room).emit('gameConnected', { name: data.name, room: data.room, userID: data.userID, chatlog: chatlogMap[data.room] });
-        let msgObject = {senderName: '', message: `${data.name} has reconnected to room '${data.room}'.`};
-        chatlogMap[data.room].push(msgObject);
-        emitMessage(data.room, msgObject.message, msgObject.senderName);
-        if (hasGameStarted) { 
-          socket.emit('gameUpdate', gameMap[data.room].getState()); //emit this only to reconnecter
-        }
-      }
-      else if (!hasGameStarted) {
-        gameMap[data.room].addPlayer(data.name, data.userID);
-        io.in(data.room).emit('gameConnected', { name: data.name, room: data.room, userID: data.userID, chatlog: chatlogMap[data.room] });
+    let hasGameStarted = gameMap[data.room].roundCount > -1;
+    let isGameFull = gameMap[data.room].players.length > 3;
+    //check if player is already in game
+    let playerAlreadyInGame = gameMap[data.room].players.some(p => p.userID === data.userID);
 
-        let msgObject = {senderName: '', message: getConnectionMessage(data.name, data.room)};
-        chatlogMap[data.room].push(msgObject);
-        emitMessage(data.room, msgObject.message, msgObject.senderName);
-      }
+    if (playerAlreadyInGame) {
+      let msgObject = {senderName: '', message: `${data.name} has reconnected to room '${data.room}'.`};
+      chatlogMap[data.room].push(msgObject);
+      emitMessage(data.room, msgObject.message, msgObject.senderName);
+    }
+    else if (!hasGameStarted && !isGameFull) {
+      gameMap[data.room].addPlayer(data.name, data.userID);
+
+      let msgObject = {senderName: '', message: getConnectionMessage(data.name, data.room)};
+      chatlogMap[data.room].push(msgObject);
+      emitMessage(data.room, msgObject.message, msgObject.senderName);
+    }
+    else {
+      console.log('joinGame: game is full or in progress. joining as spectator.', data);
+      let msgObject = {senderName: '', message: `spectator ${data.name} connected to room '${data.room}'.`};
+      chatlogMap[data.room].push(msgObject);
+      emitMessage(data.room, msgObject.message, msgObject.senderName);
+    }
+
+    if (hasGameStarted) {
+      socket.emit('gameUpdate', gameMap[data.room].getState()); //emit this only to reconnecter
     }
   });
 
@@ -122,13 +133,14 @@ io.on('connection', (socket) => {
   });
 
   //chat
-  socket.on('msgSent', (data) =>{
-    console.log(data.message);
-    chatlogMap[data.room].push({senderName: '', message: data.message});
+  socket.on('msgSent', (data) => {
+    console.log('msgSent', data);
+    chatlogMap[data.room].push({senderName: data.senderName, message: data.message});
     emitMessage(data.room, data.message, data.senderName);
   });
 
 });
 let port = process.env.PORT || 5000;
-console.log('Listening on port: ' + port);
-server.listen(port);
+server.listen(port, () => {
+  console.log('Listening on port: ' + port);
+});

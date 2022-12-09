@@ -34,12 +34,11 @@
   g_userID = (devEnabled && devUserID) || Cookies.get('ID');
 
   if (devEnabled && devRoomID && devUserID) {
-    let name = 'p' + devUserID;
     socket.on('connect', () => {
       if (devIsHost) {
-        socket.emit('createGame', { name, room: devRoomID, userID: g_userID });
+        socket.emit('createGame', { name: obtainPlayerName(), room: devRoomID, userID: g_userID });
       } else {
-        socket.emit('joinGame', { name, room: devRoomID, userID: g_userID});
+        socket.emit('joinGame', { name: obtainPlayerName(), room: devRoomID, userID: g_userID});
       }
     });
   }
@@ -550,6 +549,9 @@
   }
   // Update local storage with the player's name before joining a game.
   function obtainPlayerName() {
+    if (devEnabled && devUserID) {
+      return 'p' + devUserID;
+    }
     let name = $('#nameInput').val();
     if (name) {
       localStorage.setItem('name', name);
@@ -694,7 +696,7 @@
 
   function emitMessage(msg) {
     if (msg.length > 0) {
-      socket.emit('msgSent', {room: g_roomID, message: msg.slice(0, 150), senderName: g_clientPlayer.name});
+      socket.emit('msgSent', {room: g_roomID, message: msg.slice(0, 150), senderName: obtainPlayerName()});
     }
   }
 
