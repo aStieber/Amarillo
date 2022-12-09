@@ -548,7 +548,7 @@
     $('#nameInput').val(localStorage.getItem('name'));
   }
   // Update local storage with the player's name before joining a game.
-  function obtainPlayerName() {
+  function obtainPlayerName(useDefault = true) {
     if (devEnabled && devUserID) {
       return 'p' + devUserID;
     }
@@ -557,7 +557,9 @@
       localStorage.setItem('name', name);
     } else {
       localStorage.removeItem('name');
-      name = 'Nameless Buffoon';
+      if (useDefault) {
+        name = 'Nameless Buffoon';
+      }
     }
     return name;
   }
@@ -597,6 +599,15 @@
   });
 
 
+  $('.roomlist').on('click', '.roomlist-item-join', evt => {
+    const roomID = $(evt.target).data('roomname');
+    const name = obtainPlayerName(false);
+    if (!name) {
+      alert('Please enter a name.');
+      return;
+    }
+    socket.emit('joinGame', { name, room: roomID, userID: g_userID});
+  });
 
   socket.on('gameConnected', (data) => {
     console.log('gameConnected', data);
@@ -605,8 +616,11 @@
     $('#nameInput').hide();
     $('#createGame').hide();
     $('#joinGame').hide();
-    $('#startGame').show();
     $('.chat').show();
+    $('.roomlist').hide();
+    if (!data.isSpectator) {
+      $('#startGame').show();
+    }
   });
 
   socket.on('gameUpdate', (data) => {
@@ -761,5 +775,35 @@
 
     $('body').append(debugDiv);
   }
+
+  socket.on('roomList', (data) => {
+    if (g_roomID) {
+      // already joined a game, don't care
+      return;
+    }
+    console.log('roomList', data);
+    $('.roomlist').empty();
+    if (data.length) {
+      $('.roomlist').show();
+    } else {
+      $('.roomlist').hide();
+    }
+    data.forEach(({ roomName, ownerName, playerCount, playerIDs, roundCount, isFreeColor }) => {
+      const inProgress = roundCount >= 0;
+      const canRejoin = playerIDs.includes(g_userID);
+      const canOnlySpectate = playerCount >= 4 || inProgress;
+      const joinText = canRejoin ? 'Reconnect' : (canOnlySpectate ? 'Spectate' : 'Join');
+
+      $('.roomlist').append(`<div class="roomlist-item">
+        <div class="roomlist-item-details">
+          <div class="roomlist-item-name">Room: ${roomName}${inProgress ? ' (In Progress)' : ''}</div>
+          <div class="roomlist-item-host">Owner: ${ownerName}</div>
+          <div class="roomlist-item-round">Players: ${playerCount}${inProgress ? '' : '/4'}</div>
+          <div class="roomlist-item-mode">Mode: ${isFreeColor ? 'Loosey Goosey' : 'Standard'}</div>
+        </div>
+        <div class="roomlist-item-join" data-roomname="${roomName}">${joinText}</div>
+      </div>`);
+    });
+  });
 
 }());

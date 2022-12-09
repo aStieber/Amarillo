@@ -105,3 +105,42 @@ label {
         }
     }
 }
+
+.roomlist {
+    display: none;
+    width: 50%;
+    border: 2px solid black;
+    background: #222;
+}
+
+.roomlist-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    background: #eee;
+    &:nth-child(even) {
+        background: #bbb;
+    }
+
+    font-size: 18px;
+    padding: 4px 8px;
+}
+
+.roomlist-item-join {
+    cursor: pointer;
+    border: 1px solid #666;
+    border-radius: 4px;
+    padding: 2px 4px;
+    color: white;
+
+    position: absolute;
+    top: 8px;
+    right: 8px;
+
+    $bgcolor: #27F;
+    background: $bgcolor;
+    &:hover {
+        background: scale-color($bgcolor, $lightness: -20%);
+    }
+}
