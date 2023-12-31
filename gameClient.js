@@ -303,7 +303,7 @@
 
           return false;
         });
-      if (!fullRowExists) {
+      if (!fullRowExists && g_gameState.wallPushPhase.includes(g_userID)) {
         $('#pushConfirmButton').show();
       }
       },

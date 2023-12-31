@@ -293,7 +293,7 @@ class Game extends EventEmitter {
       this.endGameObject = this.getEndGameObject();
     }
     else {
-      this.emit('gameMessage', `Turn ${this.roundCount + 1}.`); //1-based for user
+      this.emit('gameMessage', `Round ${this.roundCount + 1}.`); //1-based for user
       this.fillFactories();
 
       if (this.communityPoolFirstTakeUserID !== '') {
