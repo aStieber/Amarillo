@@ -336,6 +336,18 @@
   function isClientsTurn() {
     return g_gameState.currentTurnUserID === g_userID;
   }
+
+  function getOrdinal(num) {
+    if (num == 1)
+      return "1st";
+    if (num == 2)
+      return "2nd";
+    if (num == 3)
+      return "3rd";
+    if (num == 4)
+      return "4th";
+    return "wtf";
+  }
   
   function updateFactories(factories) {
     $('.factories').empty();
@@ -439,19 +451,23 @@
       let patternLinesHTML = getPatternLinesHTML(player);
       let wallHTML = getWallHTML(player, wallOffset);
       let floorLineHTML = getFloorLineHTML(player);
+      let orderOrdinal = getOrdinal(turnOrder);
       //final product
       var newPlayerMatHTML = `
         <div class="playerMat" user="${player.userID}" isTurn="${g_gameState.currentTurnUserID === player.userID || g_gameState.wallPushPhase.includes(player.userID)}">
           <div class="topLine">
             <div class="scoreboard">
-              ${player.name}<br/>
-              ${player.score} Points
+              <div class="name">${player.name}</div>
+              <div class="score">${player.score} pts</div>
             </div>
             <div id="pushStepButtons">
               <button id="pushResetButton" style="display: none;">Reset</button>
               <button id="pushConfirmButton" style="display: none;" >Confirm</button>
             </div>
-            <div class="playerTurn">${turnOrder}</div>
+            <div class="tableOrder">
+              <div class="title">Order</div>
+              <div class="playerTurn">${orderOrdinal}</div>
+            </div>
           </div>
           <div id="tileSection">
             <div id="patternLines">

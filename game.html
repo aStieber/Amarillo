@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!--<script type="text/javascript" src="http://livejs.com/live.js"></script>--> <!--autoreload, remove for production-->
+        <script type="text/javascript" src="http://livejs.com/live.js"></script><!--autoreload, remove for production-->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
         <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
@@ -46,25 +46,27 @@
             <div class="gameBoard" >
                 <div class="roomlist">
                 </div>
-                <div class="chat" style="display: none">
-                    <ul id="messages">
-                        <div class="expander">
-                    </ul>
-                    <form class="textEntry" style="display: none">
-                        <textarea id="chatInput" cols="30" rows="10"></textarea><button>Send</button>
-                    </form>
-                    <div id="rules" class="rules">
-                        Row: 2 | Column: 7 | Color: 10<br>
-                        <a href="https://www.ultraboardgames.com/azul/game-rules.php" target="_blank" rel="noopener noreferrer">Rules</a>
+                <div class="topRow">
+                    <div class="chat" style="display: none">
+                        <ul id="messages">
+                            <div class="expander">
+                        </ul>
+                        <form class="textEntry" style="display: none">
+                            <textarea id="chatInput" cols="30" rows="10"></textarea><button>Send</button>
+                        </form>
+                        <div id="rules" class="rules">
+                            Row: 2 | Column: 7 | Color: 10<br>
+                            <a href="https://www.ultraboardgames.com/azul/game-rules.php" target="_blank" rel="noopener noreferrer">Rules</a>
+                        </div>
                     </div>
+                    <div id="centerBoard">
+                        <div id="factories" class="factories"></div>
+                    </div>
+                    <div class="playerMats disable-selection" ></div>
                 </div>
-                <div id="centerBoard">
-                    <div id="factories" class="factories"></div>
-                </div>
-                <div class="playerMats disable-selection" >
-                </div>
-                <div class="opponentMatsWrapper">
-                    <div class="opponentMats">
+                <div class="bottomRow">
+                    <div class="opponentMatsWrapper">
+                        <div class="opponentMats"/>
                     </div>
                 </div>
             </div>

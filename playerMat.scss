@@ -54,11 +54,27 @@
 }
 
 .scoreboard {
-    background: #bbb;
-    border: 2px solid black;
-    width: 20%;
-    padding-left: 8px;
-    margin-left: 5px;
+	display: flex;
+	flex-direction: row;
+	&  > * {
+		justify-content: center;
+		align-items: center;
+	    border: 4px solid black;
+	    padding-left: 8px;
+	    padding-right: 8px;
+	    font-size: 42px;
+	    margin: 5px;
+	}
+
+	& > .name {
+		background: #ffc7e9;
+		width: 60%;
+		overflow: hidden;
+	}
+	& > .score {
+		background: green;
+	}
+	width: 75%;
 }
 
 .playerMat .topLine {
@@ -66,14 +82,19 @@
 	justify-content: space-between;
 }
 
-.playerTurn {
+.tableOrder {
 	padding: 0px 20px 0px 20px;
 	border: 4px black solid;
 	background: gold;
-	justify-content: center;
-	align-items: center;
-	font-size: 42px;
-	margin-right: 5px;
+	margin: 5px;
+
+	.playerTurn {
+		font-size: 42px;
+	}
+	.title {
+		font-size: 20px;
+		margin-bottom: -20px;
+	}
 }
 
 #floorContainer {
@@ -96,6 +117,12 @@
 	line-height: 66px;
 }
 
+#pushStepButtons {
+	width: 20%;
+	margin-top: 3px;
+	height: 38px;
+}
+
 #pushStepButtons > button {
 	border: 2px solid black;
 	background: #222;
@@ -104,6 +131,7 @@
 
 #pushStepButtons > #pushResetButton {
 	background: #3f9684;
+	margin-bottom: 2px;
 }
 
 #pushStepButtons > #pushConfirmButton {

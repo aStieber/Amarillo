@@ -4,7 +4,7 @@ $spacing: 10px;
 	list-style-type: none;
 	background: white;
 	border: 1px black solid;
-	height: 400px;
+	height: 593px;
 	display: flex;
 	flex-direction: column;
 	overflow-y: scroll;
@@ -63,6 +63,7 @@ $spacing: 10px;
 	background: #222;
 	padding: $spacing;
 	padding-bottom: 0;
+	margin: 10px;
 }
 
 .expander {
