@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <script type="text/javascript" src="http://livejs.com/live.js"></script><!--autoreload, remove for production-->
+        <!--<script type="text/javascript" src="http://livejs.com/live.js"></script>--><!--autoreload, remove for production-->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
         <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
@@ -59,7 +59,7 @@
                             <textarea id="chatInput" cols="30" rows="10"></textarea><button>Send</button>
                         </form>
                         <div id="rules" class="rules">
-                            Row: 2 | Column: 7 | Color: 10<br>
+                            Row: <span id="rowScore"></span> | Column: <span id="columnScore"></span> | All Colors: <span id="colorScore"></span><br>
                             <a href="https://www.ultraboardgames.com/azul/game-rules.php" target="_blank" rel="noopener noreferrer">Rules</a>
                         </div>
                     </div>

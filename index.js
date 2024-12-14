@@ -96,6 +96,13 @@ io.on('connection', (socket) => {
       let sizeMsg = {senderName: '', message: `Playing on a ${data.boardSize}x${data.boardSize} board.`};
       chatlogMap[roomName].push(sizeMsg);
       emitMessage(roomName, sizeMsg.message, sizeMsg.senderName);
+
+      let scoreMsg = {senderName: '', message: `Rows: ${gameMap[roomName].getComboScores().rowScore} pts.
+        Columns: ${gameMap[roomName].getComboScores().columnScore} pts.
+        Color: ${gameMap[roomName].getComboScores().colorScore} pts.`};
+
+      chatlogMap[roomName].push(scoreMsg);
+      emitMessage(roomName, scoreMsg.message, scoreMsg.senderName);
     }
 
 

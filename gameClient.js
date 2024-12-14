@@ -521,14 +521,17 @@
         <tr>
           <th>Name</th>
           <th>Ending Score</th>
-          <th>Rows Completed (x2)</th>
-          <th>Columns Completed (x7)</th>
-          <th>Colors Completed (x10)</th>
+          <th>Rows Completed (x${g_gameState.comboScores.rowScore}))</th>
+          <th>Columns Completed (x${g_gameState.comboScores.columnScore})</th>
+          <th>Colors Completed (x${g_gameState.comboScores.colorScore})</th>
           <th>Final Score</th>
         </tr>
     `; 
     endGameList.forEach(obj => {
-      let finalScore = obj.endingScore + (obj.numRowsCompleted * 2) + (obj.numColumnsCompleted * 7) + (obj.numColorsCompleted * 10);
+      let finalScore = obj.endingScore 
+          + (obj.numRowsCompleted * g_gameState.comboScores.rowScore)
+          + (obj.numColumnsCompleted * g_gameState.comboScores.columnScore)
+          + (obj.numColorsCompleted * g_gameState.comboScores.colorScore);
       gridHTML += `
         <tr>
           <th>${obj.name}</th>
@@ -646,6 +649,13 @@
     $('#menuButtons').hide();
     $('.textEntry').show();
     $('.rules').show();
+    console.log(g_gameState)
+    console.log(g_gameState.comboScores);
+    console.log(g_gameState.comboScores.rowScore)
+    $('#rowScore')[0].innerText = g_gameState.comboScores.rowScore;
+    $('#columnScore')[0].innerText = g_gameState.comboScores.columnScore;
+    $('#colorScore')[0].innerText = g_gameState.comboScores.colorScore;
+
     if (data.endGameObject) {
       onEndGame(data.endGameObject);
     }

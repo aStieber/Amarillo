@@ -416,8 +416,23 @@ class Game extends EventEmitter {
       endGameObject: (this.endGameObject ? this.endGameObject : false),
       isFreeColor: this.isFreeColor,
       wallPushPhase: this.wallPushPhase,
-      boardSize: this.boardSize
+      boardSize: this.boardSize,
+      comboScores: this.getComboScores()
     };
+  }
+
+  getComboScores()
+  {
+    let output = {rowScore: 2, columnScore: 7, colorScore: 10};
+    if (this.boardSize == 5)
+      return output;
+
+    let scalar = 0.5 * this.boardSize * (this.boardSize + 1);
+
+    output.rowScore = Math.ceil(scalar * 2/15);
+    output.columnScore = Math.ceil(scalar * 7/15);
+    output.colorScore = Math.ceil(scalar * 10/15);
+    return output;
   }
 
   init(isFreeColor) {
