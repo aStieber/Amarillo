@@ -447,6 +447,13 @@ class Game extends EventEmitter {
     return output;
   }
 
+  getMaxColorCount()
+  {
+    if (this.boardSize == 5)
+      return 20;
+    return Math.ceil(1.34 * 0.5 * this.boardSize * (this.boardSize + 1)); 
+  }
+
   refillTilePool() {
     function getRandomInt(min, max) {
       min = Math.ceil(min);
@@ -455,10 +462,10 @@ class Game extends EventEmitter {
     }
 
     let inPlayCounts = this.getTilesOnBoards();
+    let maxColorCount = this.getMaxColorCount();
     let pool = []
-    //100 tiles, 20 of each type.
     for (let i = 0; i < this.boardSize; i++) {
-      pool = pool.concat(Array(20 - inPlayCounts[i]).fill(i));
+      pool = pool.concat(Array(maxColorCount - inPlayCounts[i]).fill(i));
     }
     //fisher-yates
     for (var f = pool.length - 1; f > 0; f--) {

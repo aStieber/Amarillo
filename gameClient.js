@@ -36,7 +36,7 @@
   if (devEnabled && devRoomID && devUserID) {
     socket.on('connect', () => {
       if (devIsHost) {
-        socket.emit('createGame', { name: obtainPlayerName(), room: devRoomID, userID: g_userID });
+        socket.emit('createGame', { name: obtainPlayerName(), room: devRoomID, userID: g_userID, boardSize: 5 });
       } else {
         socket.emit('joinGame', { name: obtainPlayerName(), room: devRoomID, userID: g_userID});
       }
