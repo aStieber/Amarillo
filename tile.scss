@@ -10,12 +10,25 @@
     );
 }
 
+@function polkaDot($color, $dotSize: 2pt) {
+    $backgroundColor: scale-color($color, $lightness: +40%);
+    
+    @return radial-gradient($color 20px, transparent 20px), radial-gradient($color 20px, $backgroundColor 20px);
+}
+
 $tileColors:
     0 #7300de #7300de,
     1 #ffbf00 #ffbf00,
     2 #ff3311 stripedBackground(#ff3311, 90deg, 7px, 4px),
     3 #18a100 stripedBackground(#18a100, 45deg),
-    4 #0085de stripedBackground(#0085de, 135deg);
+    4 #0085de stripedBackground(#0085de, 135deg),
+    5 #eb7134 polkaDot(#eb7134),
+    6 #ff007f polkaDot(#ff007f),
+    7 #0d6e14 polkaDot(#0d6e14),
+    8 #57000e polkaDot(#57000e),    
+    9 #2485ff polkaDot(#2485ff);
+
+
 
 .tile {
     box-sizing: border-box;
@@ -49,7 +62,7 @@ $tileColors:
 }
 
 
-.tile.placed[type="5"] {
+.tile.placed[type="-2"] {
     outline: 4px solid #851821;
     outline-offset: -6px;
     background: white;

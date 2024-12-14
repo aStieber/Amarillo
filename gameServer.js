@@ -8,13 +8,13 @@ const $ = require('jquery')(window);
 const deepCopyArray = (a) => $.extend(true, (Array.isArray(a) ? [] : {}), a);
 
 
-function getColumnFromRow(rowIndex, tileType, wallOffset=0) {
+function getColumnFromRow(rowIndex, tileType, boardSize) {
   //  
-  return (wallOffset + tileType - rowIndex + 5) % 5;
+  return (tileType - rowIndex + boardSize) % boardSize;
 }
 
 class Player {
-  constructor(name, userID, wallOffset=0) {
+  constructor(name, userID, boardSize=5) {
     this.name = name;
     this.userID = userID;
     this.turnOrder = 0;
@@ -23,17 +23,22 @@ class Player {
     this.patternLines = [];
     this.floorLine = []; //max 7 spaces
 
-    this.clearPatternLines([0, 1, 2, 3, 4]);
-    this.initializeWall(wallOffset);
+    let tmp = [];
+    for (let i = 0; i < boardSize; i++) {
+        tmp.push(i);
+    }
+
+    this.clearPatternLines(tmp);
+    this.initializeWall(boardSize);
   }
 
-  processPlayerBoard(wallOffset=0) {
+  processPlayerBoard() {
     let completedPatternLineIndexes = this.identifyCompletedRows();
     //move to wall
     for (let i in completedPatternLineIndexes) {
       let tileType = parseInt(this.patternLines[completedPatternLineIndexes[i]][0]);
       let rowIndex = parseInt(completedPatternLineIndexes[i]);
-      let columnIndex = getColumnFromRow(rowIndex, tileType, wallOffset);
+      let columnIndex = getColumnFromRow(rowIndex, tileType, this.patternLines.length);
 
       this.updateWall(tileType, rowIndex, columnIndex);
     }
@@ -104,11 +109,11 @@ class Player {
     });
   }
 
-  initializeWall() {
+  initializeWall(n=5) {
     let newWall = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < n; i++) {
       let newLine = [];
-      for (let j = 0; j < 5; j++) {
+      for (let j = 0; j < n; j++) {
         newLine.push(-1);
       }
       newWall.push(newLine);
@@ -126,7 +131,7 @@ class Player {
     //if either search is exactly 1, only consider the other score. Not my fault, that's the rules.
     this.score += (hSearchScore + vSearchScore);
     if (hSearchScore === 1 || vSearchScore === 1) {
-       this.score -= 1; //this way, we don't have to worry about which is 1.
+       this.score -= 1; 
     }
     console.log('final score: ' + this.score);
   }
@@ -159,7 +164,7 @@ class Player {
 }
 
 class Game extends EventEmitter {
-  constructor(roomName) {
+  constructor(roomName, boardSize=5) {
     super();
 
     this.roomName = roomName;
@@ -167,16 +172,17 @@ class Game extends EventEmitter {
     this.factories = [];
     this.communityPool = []; //Called "Center of the table" in ruleset
     this.players = [];
-    this.wallOffset = 0;
     this.currentTurn = 0;
     this.roundCount = -1;
     this.communityPoolFirstTakeUserID = '';
     this.isFreeColor = false;
     this.wallPushPhase = [];
+    this.boardSize = boardSize;
   }
 
   addPlayer(name, userID) {
-    this.players.push(new Player(name.slice(0, 20).replace(/\W/g, ''), userID));
+    console.log("BoardSize:" + this.boardSize)
+    this.players.push(new Player(name.slice(0, 20).replace(/\W/g, ''), userID, this.boardSize));
 
     let playerCount = this.players.length;
     for (let i = 0; i < playerCount; i++) {
@@ -220,7 +226,7 @@ class Game extends EventEmitter {
       this.communityPool = newCommunityPool;
       if (!this.communityPoolFirstTakeUserID) {
         this.communityPoolFirstTakeUserID = player.userID;
-        player.floorLine.push(5);
+        player.floorLine.push(-2);
       }
       moveMessage = `<b>${player.name.slice(0, 8)}</b> <- Pool | [${tileType.toString().repeat(selectedTileCount)}]`;
     }
@@ -364,13 +370,26 @@ class Game extends EventEmitter {
 
   processPlayerBoardsAtEndTurn() {
     this.players.forEach(player => {
-      player.processPlayerBoard(this.wallOffset);
+      player.processPlayerBoard();
     });
+  }
+
+  getFactoryCount(boardSize, playerCount)
+  {
+    if (boardSize == 5)
+      return (2 * playerCount) + 1;
+    let targetRatio = 0.6; //ratio of factory tiles to total player pattern line tiles.
+    let scalar = targetRatio / (4 * 2);
+    let result = scalar * playerCount * boardSize * (boardSize + 1);
+    if (boardSize < 5)
+      return Math.ceil(result);
+    else
+      return Math.floor(result);
   }
 
   fillFactories() {
     this.factories = [];
-    let numFactories = (this.players.length * 2) + 1;
+    let numFactories = this.getFactoryCount(this.boardSize, this.players.length);
     for (let i = 0; i < numFactories; i++) {
       if (this.tilePool.length >= 4) {
         this.factories.push(this.tilePool.slice(0, 4));
@@ -392,12 +411,12 @@ class Game extends EventEmitter {
       players: this.players,
       factories: this.factories,
       communityPool: this.communityPool,
-      wallOffset: this.wallOffset,
       currentTurnUserID: (this.currentTurn === -1 ? "" : this.players[this.currentTurn].userID),
       communityPoolFirstTakeUserID: this.communityPoolFirstTakeUserID,
       endGameObject: (this.endGameObject ? this.endGameObject : false),
       isFreeColor: this.isFreeColor,
-      wallPushPhase: this.wallPushPhase
+      wallPushPhase: this.wallPushPhase,
+      boardSize: this.boardSize
     };
   }
 
@@ -406,7 +425,7 @@ class Game extends EventEmitter {
   }
 
   getTilesOnBoards() {
-    let output = new Array(5).fill(0);
+    let output = new Array(this.boardSize).fill(0);
     this.players.forEach(player => {
       //wall
       player.wall.forEach(line => {
@@ -438,7 +457,7 @@ class Game extends EventEmitter {
     let inPlayCounts = this.getTilesOnBoards();
     let pool = []
     //100 tiles, 20 of each type.
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < this.boardSize; i++) {
       pool = pool.concat(Array(20 - inPlayCounts[i]).fill(i));
     }
     //fisher-yates
@@ -458,7 +477,7 @@ class Game extends EventEmitter {
       let numColorsCompleted = 0;
 
       //rows completed and colors completed
-      let colorCounts = [0, 0, 0, 0, 0];
+      let colorCounts = new Array(this.boardSize).fill(0);
       for (let w in player.wall) {
         let rowCompleted = true;
         let wallLine = player.wall[w];
@@ -471,7 +490,7 @@ class Game extends EventEmitter {
         }
       }
       //columns completed
-      for (let c = 0; c < 5; c++) {
+      for (let c = 0; c < this.boardSize; c++) {
         let columnCompleted = true;
         for (let w in player.wall) {
           if (player.wall[w][c] === -1) {
@@ -485,7 +504,7 @@ class Game extends EventEmitter {
       }
       //colors completed
       colorCounts.forEach(count => {
-        if (count === 5)
+        if (count === this.boardSize)
           numColorsCompleted++;
       });
 

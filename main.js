@@ -37,7 +37,6 @@
       return;
     }
     socket.emit('joinGame', { name, room: roomID });
-    player = new Player(name, P2);
   });
 
   socket.on('gameCreated', (data) => {

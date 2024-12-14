@@ -73,7 +73,7 @@ io.on('connection', (socket) => {
       roomName = data.room;
     }
     socket.join(roomName);
-    gameMap[roomName] = new Game(roomName);
+    gameMap[roomName] = new Game(roomName, parseInt(data.boardSize));
     gameMap[roomName].init(data.freecolor);
     gameMap[roomName].addPlayer(data.name, data.userID);
     socket.emit('gameConnected', { name: data.name, room: roomName, userID: data.userID, chatlog: [] });
@@ -90,6 +90,15 @@ io.on('connection', (socket) => {
       chatlogMap[roomName].push(colorMsg);
       emitMessage(roomName, colorMsg.message, colorMsg.senderName);
     }
+
+    if (data.boardSize != 5)
+    {
+      let sizeMsg = {senderName: '', message: `Playing on a ${data.boardSize}x${data.boardSize} board.`};
+      chatlogMap[roomName].push(sizeMsg);
+      emitMessage(roomName, sizeMsg.message, sizeMsg.senderName);
+    }
+
+
     let connMsg = {senderName: '', message: getConnectionMessage(data.name, roomName)};
     chatlogMap[roomName].push(connMsg);
     emitMessage(roomName, connMsg.message, connMsg.senderName);

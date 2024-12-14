@@ -70,7 +70,7 @@
           selectedTiles.toggleClass('selectedTile');
 
           let rowsToHighlight = [];
-          for (let r = 0; r < 5; r++) {
+          for (let r = 0; r < g_gameState.boardSize; r++) {
             let tileCount = 0;
             let rowMatch = true;
             for (let c = 0; c < g_clientPlayer.patternLines[r].length; c++) {
@@ -397,14 +397,15 @@
     return patternLinesHTML;
   }
 
-  function getWallHTML(player, wallOffset) {
+  function getWallHTML(player) {
     let wallHTML = '';
     if (!g_gameState.isFreeColor) {
-      let t = wallOffset;
+      let boardSize = g_gameState.boardSize;
+      let t = 0;
       player.wall.forEach(wallLine => {
         wallHTML += `<div class="patternLine">`;
         wallLine.forEach(tileType => {
-          wallHTML += `<div class="tile walltile" type="${t%5}" occupied=${tileType >= 0}></div>`;
+          wallHTML += `<div class="tile walltile" type="${t%boardSize}" occupied=${tileType >= 0}></div>`;
           t++;
         });
         wallHTML += '</div>';
@@ -438,7 +439,7 @@
     return floorLineHTML;
   }
 
-  function updatePlayerMats(players, wallOffset=0, shouldUpdatePlayer=true) {
+  function updatePlayerMats(players, shouldUpdatePlayer=true) {
     if (shouldUpdatePlayer) {
       $('.playerMat').remove();
     }
@@ -449,7 +450,7 @@
     for (let index in players) {
       let player = players[index];
       let patternLinesHTML = getPatternLinesHTML(player);
-      let wallHTML = getWallHTML(player, wallOffset);
+      let wallHTML = getWallHTML(player);
       let floorLineHTML = getFloorLineHTML(player);
       let orderOrdinal = getOrdinal(turnOrder);
       //final product
@@ -582,7 +583,7 @@
 
   $('#dialogAccept').on('click', () => {
     const name = obtainPlayerName();
-    socket.emit('createGame', { name: name, userID: g_userID, freecolor: $('#freeColorRadioButton')[0].checked});
+    socket.emit('createGame', { name: name, userID: g_userID, freecolor: $('#freeColorRadioButton')[0].checked, boardSize:$('#boardSizeList')[0].value });
     $("#gameModeDialog").dialog('close');
   });
 
@@ -659,7 +660,7 @@
     updateCommunityPool(data.communityPool);
 
     let shouldUpdatePlayer = !data.wallPushPhase.includes(g_userID) || g_gameState.players.length === data.wallPushPhase.length || isFirstUpdate;
-    updatePlayerMats(data.players, data.wallOffset, shouldUpdatePlayer);
+    updatePlayerMats(data.players, shouldUpdatePlayer);
 
     if (data.wallPushPhase.length && shouldUpdatePlayer) {
       document.getElementById('turnAlert').play();
