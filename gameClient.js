@@ -521,7 +521,7 @@
         <tr>
           <th>Name</th>
           <th>Ending Score</th>
-          <th>Rows Completed (x${g_gameState.comboScores.rowScore}))</th>
+          <th>Rows Completed (x${g_gameState.comboScores.rowScore})</th>
           <th>Columns Completed (x${g_gameState.comboScores.columnScore})</th>
           <th>Colors Completed (x${g_gameState.comboScores.colorScore})</th>
           <th>Final Score</th>
