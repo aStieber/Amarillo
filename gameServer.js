@@ -147,15 +147,16 @@ class Player {
 
   recursiveSearch(wallCopy, row, column, searchDirection='h') {
     if (wallCopy[row][column] !== -1) {
+      let max = this.patternLines.length - 1;
       let score = 1;
       wallCopy[row][column] = -1; //prevent search from coming back to us.
       if (searchDirection === 'v') {
         if (row > 0) score += this.recursiveSearch(wallCopy, row-1, column, searchDirection);
-        if (row < 4) score += this.recursiveSearch(wallCopy, row+1, column, searchDirection);
+        if (row < max) score += this.recursiveSearch(wallCopy, row+1, column, searchDirection);
       }
       else if (searchDirection === 'h') {
         if (column > 0) score += this.recursiveSearch(wallCopy, row, column-1, searchDirection);
-        if (column < 4) score += this.recursiveSearch(wallCopy, row, column+1, searchDirection);
+        if (column < max) score += this.recursiveSearch(wallCopy, row, column+1, searchDirection);
       }
       return score;
     }
